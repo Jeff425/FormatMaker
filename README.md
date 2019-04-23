@@ -1,3 +1,12 @@
+In addition to below, this app is hosted on firebase, using firestore and firebase storage to manage data.
+For the UI I used [React.js](https://reactjs.org/) along with [React Bootstrap](https://react-bootstrap.github.io/) and the bootstrap theme [flatly](https://bootswatch.com/flatly/)
+
+I can run
+### `npm run build`
+
+### `firebase deploy`
+To publish changes
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
