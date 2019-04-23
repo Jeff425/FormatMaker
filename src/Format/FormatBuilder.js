@@ -1,0 +1,341 @@
+import React, { Component } from 'react';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import FormGroup from 'react-bootstrap/FormGroup';
+import FormLabel from 'react-bootstrap/FormLabel';
+import FormControl from 'react-bootstrap/FormControl';
+import Button from 'react-bootstrap/Button';
+import Alert from 'react-bootstrap/Alert';
+import { Link, withRouter } from 'react-router-dom';
+import FormatEditor from './FormatEditor';
+import ScryfallLoader from './ScryfallLoader';
+import { withFirebase } from './../Firebase/FirebaseContext';
+
+class FormatBuilderBase extends Component {
+  
+  constructor(props) {
+    super(props);
+    this.state = {name: "", desc: "", showInfo: false, isLoading: true, formatIds: new Set(), sortingFunc: null, authUser: null, error: "", didSucceed: false, groups: [
+      {
+        "groupName": "Legal Cards",
+        "maxTotal": 0,
+        "maxCopies": 4,
+        "cards": []
+      },
+      {
+        "groupName": "Unlimited",
+        "maxTotal": 0,
+        "maxCopies": 0,
+        "cards": [
+          {
+            "imageUri": "https://img.scryfall.com/cards/small/en/xln/260.jpg?1527431524",
+            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435421",
+            "name": "Plains",
+            "type_line": "Basic Land — Plains",
+            "oracle_text": "({T}: Add {W}.)",
+            "colors": [],
+            "color_identity": [
+              "W"
+            ],
+            "cmc": 0,
+            "id": "51ff6ee0-01f4-432f-916b-ed771904d64c"
+          },
+          {
+            "imageUri": "https://img.scryfall.com/cards/small/en/xln/264.jpg?1527431586",
+            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435425",
+            "name": "Island",
+            "type_line": "Basic Land — Island",
+            "oracle_text": "({T}: Add {U}.)",
+            "colors": [],
+            "color_identity": [
+              "U"
+            ],
+            "cmc": 0,
+            "id": "40c840af-9a13-4716-8458-09071239cc26"
+          },
+          {
+            "imageUri": "https://img.scryfall.com/cards/small/en/xln/268.jpg?1527431644",
+            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435429",
+            "name": "Swamp",
+            "type_line": "Basic Land — Swamp",
+            "oracle_text": "({T}: Add {B}.)",
+            "colors": [],
+            "color_identity": [
+              "B"
+            ],
+            "cmc": 0,
+            "id": "db69a637-5770-4eea-9b04-c00e6f90a12a"
+          },
+          {
+            "imageUri": "https://img.scryfall.com/cards/small/en/xln/272.jpg?1527431712",
+            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435433",
+            "name": "Mountain",
+            "type_line": "Basic Land — Mountain",
+            "oracle_text": "({T}: Add {R}.)",
+            "colors": [],
+            "color_identity": [
+              "R"
+            ],
+            "cmc": 0,
+            "id": "15c96b83-d0b3-4da9-bb2d-249cc18b55e9"
+          },
+          {
+            "imageUri": "https://img.scryfall.com/cards/small/en/xln/276.jpg?1527431779",
+            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435437",
+            "name": "Forest",
+            "type_line": "Basic Land — Forest",
+            "oracle_text": "({T}: Add {G}.)",
+            "colors": [],
+            "color_identity": [
+              "G"
+            ],
+            "cmc": 0,
+            "id": "7eef5e5c-27be-45f2-a9c8-4e0a65c984d4"
+          }
+        ]
+      }
+    ], currentTab: "extra_Legal Cards"};
+    this.addFromLoader = this.addFromLoader.bind(this);
+    this.addFromLoaderBatch = this.addFromLoaderBatch.bind(this);
+    this.remove = this.remove.bind(this);
+    this.sort = this.sort.bind(this);
+    this.saveFormat = this.saveFormat.bind(this);
+    this.onGroupSubmit = this.onGroupSubmit.bind(this);
+    this.onTabChange = this.onTabChange.bind(this);
+    this.onGroupDelete = this.onGroupDelete.bind(this);
+    this.successWrite = this.successWrite.bind(this);
+    this.errorWrite = this.errorWrite.bind(this);
+    this.editControl = this.editControl.bind(this);
+    this.readFormat = this.readFormat.bind(this);
+    this.successRead = this.successRead.bind(this);
+    this.errorRead = this.errorRead.bind(this);
+  }
+  
+  componentDidMount() {
+    this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
+      if (auth) {
+        this.setState({authUser: auth});
+        if (this.props.match.params.formatId) {
+          this.readFormat(this.props.match.params.formatId);
+        } else {
+          this.setState({isLoading: false});
+        }
+      } else {
+        this.props.history.push("/signin/" + encodeURIComponent("format/") + (this.props.match.params.formatId ? encodeURIComponent(this.props.match.params.formatId) : ""));
+      }
+    });
+  }
+  
+  componentWillUnmount() {
+    this.listener();
+  }
+  
+  editControl(event, control) {
+    this.setState({[control]: event.target.value});
+  }
+  
+  addFromLoader(card) {
+    if(this.state.currentTab === "addGroup") {
+      return;
+    }
+    if (card.id && !this.state.formatIds.has(card.id)) {
+      this.setState({formatIds: this.state.formatIds.add(card.id)});
+      const newGroups = [...this.state.groups];
+      const groupName = this.state.currentTab.substring(6); 
+      newGroups.forEach(group => {
+        if (group.groupName === groupName) {
+          group.cards = group.cards.concat(card);
+        }
+      });
+      this.setState({groups: newGroups});
+      this.sort(this.state.sortingFunc, null, newGroups);
+    }   
+  }
+  
+  addFromLoaderBatch(cards) {
+    if(this.state.currentTab === "addGroup") {
+      return;
+    }
+    const newCards = [];
+    cards.forEach(card => {
+      if (card.id && !this.state.formatIds.has(card.id)) {
+        newCards.push(card);
+        this.state.formatIds.add(card.id);
+      }
+    });
+    const newGroups = [...this.state.groups];
+    const groupName = this.state.currentTab.substring(6); 
+    newGroups.forEach(group => {
+      if (group.groupName === groupName) {
+        group.cards = group.cards.concat(newCards);
+      }
+    });
+    this.setState({groups: newGroups});
+    this.sort(this.state.sortingFunc, null, newGroups);
+  }
+  
+  remove(card) {
+    const idCopy = new Set(this.state.formatIds);
+    idCopy.delete(card.id);
+    this.setState({formatIds: idCopy});
+    const newGroups = [...this.state.groups];
+    const groupName = this.state.currentTab.substring(6); 
+    newGroups.forEach(group => {
+      if (group.groupName === groupName) {
+        group.cards = group.cards.filter(icard => icard !== card);
+      }
+    });
+    this.setState({groups: newGroups});
+    this.sort(this.state.sortingFunc, null, newGroups);
+  }
+  
+  sort(sortingFunc, newGroups) {
+    let groups;
+    if (newGroups) {
+      groups = newGroups;
+    } else {
+      groups = [...this.state.groups]
+    }
+    groups.forEach(group => {
+      group.cards = sortingFunc(group.cards);
+    });
+    this.setState({sortingFunc: sortingFunc, groups: groups});
+  }
+  
+  saveFormat() {
+    if (this.state.name !== "" && this.state.desc !== "") {
+      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, JSON.stringify({groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
+      this.setState({isLoading: true});
+    } else {
+      this.setState({showInfo: true});
+    }
+  }
+  
+  successWrite(firebaseId) {
+    this.setState({didSucceed: true});
+    this.props.history.push("/format/" + firebaseId);
+    this.readFormat(firebaseId);
+  }
+  
+  errorWrite(errorMessage) {
+    this.setState({error: errorMessage, isLoading: false});
+  }
+  
+  readFormat(firebaseId) {
+    this.props.firebase.readFormat(firebaseId, this.successRead, this.errorRead, true, this.state.authUser);
+  }
+  
+  successRead(name, desc, formatText) {
+    this.setState({name: name, desc: desc, showInfo: false, isLoading: false, error: ""});
+    const formatIds = new Set();
+    const format = JSON.parse(formatText);
+    format.groups.forEach(group => {
+      group.cards.forEach(card => {
+        formatIds.add(card.id);
+      });
+    });
+    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "addGroup"});
+    if (this.state.sortingFunc) {
+      this.sort(this.state.sortingFunc, format.groups);
+    } else {
+      this.setState({groups: format.groups});
+    }
+  }
+  
+  errorRead(errorMessage) {
+    this.props.history.push("/format/");
+    this.setState({error: errorMessage, isLoading: false});
+  }
+  
+  onGroupSubmit(groupName, maxTotal, maxCopies) {
+    for (let i = 0; i < this.state.groups.length; i++) {
+      if (this.state.groups[i].groupName === groupName) {
+        const newGroups = [...this.state.groups];
+        newGroups[i] = {groupName: groupName, maxTotal: maxTotal, maxCopies: maxCopies, cards: []};
+        this.setState({groups: newGroups});
+        return;
+      }
+    }
+    const newGroup = {groupName: groupName, maxTotal: maxTotal, maxCopies: maxCopies, cards: []};
+    this.setState({groups: this.state.groups.concat(newGroup)});
+  }
+  
+  onGroupDelete(groupName) {
+    this.setState({currentTab: "addGroup", groups: this.state.groups.filter(otherGroup => otherGroup.groupName !== groupName)});
+  }
+  
+  onTabChange(key) {
+    this.setState({currentTab: key});
+  }
+  
+  render() {
+    if (this.state.isLoading) {
+      return (
+        <div className="main-page">
+          <img className="mt-4" src={process.env.PUBLIC_URL + "/loader.gif"} alt="loading" />
+        </div>
+      );
+    }
+    if (this.state.showInfo) {
+      return (
+        <div className="main-page">
+          <div className="singleApp">
+            <h1>Edit Format Info</h1>
+            <h5 className="text-muted">Please give a name and a description to the format</h5>
+            <FormGroup>
+              <FormLabel>Format Name</FormLabel>
+              <FormControl placeholder="Enter Name Here" value={this.state.name} onChange={event => this.editControl(event, "name")} maxLength={25} />
+            </FormGroup>
+            <FormGroup>
+              <FormLabel>Format Description</FormLabel>
+              <FormControl as="textarea" rows="5" value={this.state.desc} onChange={event => this.editControl(event, "desc")} maxLength={250} />
+            </FormGroup>
+            <div className="singleApp d-flex flex-row">
+              <Button variant="primary" size="lg" onClick={() => this.setState({showInfo: false})}>Back</Button>
+              <Button variant="primary" size="lg" className="flex-grow-1 ml-3" onClick={this.saveFormat}>Submit</Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <Container fluid>
+        {this.state.error && <Row>
+          <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3" onClose={() => this.setState({error: ""})}>
+            <Alert.Heading>Error with format</Alert.Heading>
+            <p>{this.state.error}</p>
+          </Alert>
+        </Row>}
+        {this.state.didSucceed && <Row>
+          <Alert dismissible variant="success" className="fullWidth ml-3 mr-3" onClose={() => this.setState({didSucceed: false})}>
+            <Alert.Heading>Success!</Alert.Heading>
+            <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={"/format/" + this.props.match.params.formatId}>directly</Link> or you may create decks for your format <Link to={"/deck/" + this.props.match.params.formatId}>here.</Link></p>
+          </Alert>      
+        </Row>}
+        <Row>
+          <Col lg>
+            <FormatEditor 
+              removeCard={this.remove} 
+              sortPass={this.sort} 
+              onSave={this.saveFormat} 
+              onInfo={() => this.setState({showInfo: true})} 
+              onSubmitGroup={this.onGroupSubmit}
+              onDeleteGroup={this.onGroupDelete}
+              groups={this.state.groups}
+              tabKey={this.state.currentTab}
+              onTabChange={this.onTabChange}
+            />
+          </Col>
+          <Col lg>
+            <ScryfallLoader addCard={this.addFromLoader} addBatch={this.addFromLoaderBatch} />
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
+}
+
+const FormatBuilder = withFirebase(withRouter(FormatBuilderBase));
+
+export default FormatBuilder;

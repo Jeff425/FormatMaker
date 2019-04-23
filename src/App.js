@@ -1,28 +1,53 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import './App.scss';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
+import MainPage from './MainPage';
+import NavigationBar from './NavigationBar';
+import FormatBuilder from './Format/FormatBuilder';
+import DeckBuilder from './Deck/DeckBuilder';
+import SignInPage from './Account/SignInPage';
+import SignUpPage from './Account/SignUpPage';
+import FormatSelector from './Format/FormatSelector';
+import OwnFormatSelector from './Format/OwnFormatSelector';
+import HowToUse from './HowToUse';
+import { withFirebase } from './Firebase/FirebaseContext';
 
 class App extends Component {
+  
+  constructor(props) {
+    super(props);
+    this.state = {authUser: null};
+  }
+  
+  componentDidMount() {
+    this.listener = this.props.firebase.auth.onAuthStateChanged(authUser => {
+      authUser ? this.setState({authUser: authUser}) : this.setState({authUser: null});
+    });
+  }
+  
+  componentWillUnmount() {
+    this.listener();
+  }
+  
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
+      <Router>
+        <div className="viewport">
+          <NavigationBar authUser={this.state.authUser} />
+          <div className="content">
+            <Route exact={true} path="/" component={MainPage} />
+            <Route path="/format/:formatId?" component={FormatBuilder} />
+            <Route path="/deck/:formatId" component={DeckBuilder} />
+            <Route exact={true} path="/deck" component={FormatSelector} />
+            <Route path="/signin/:redirect?" component={SignInPage} />
+            <Route path="/signup/:redirect?" component={SignUpPage} />
+            <Route path="/ownformats" component={OwnFormatSelector} />
+            <Route path="/howto" component={HowToUse} />
+          </div>
+        </div>
+      </Router>
     );
   }
 }
 
-export default App;
+export default withFirebase(App);
