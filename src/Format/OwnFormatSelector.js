@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { withFirebase } from './../Firebase/FirebaseContext';
+import ROUTES from './../ROUTES';
 
 class OwnFormatSelector extends Component {
   
@@ -20,10 +21,14 @@ class OwnFormatSelector extends Component {
   componentDidMount() {
     this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
       if (auth) {
+        if (!auth.emailVerified) {
+          this.props.history.push(ROUTES.emailverify);
+          return;
+        }
         this.setState({authUser: auth});
         this.loadFormats(auth);
       } else {
-        this.props.history.push("/signin/ownformats");
+        this.props.history.push(ROUTES.signin + ROUTES.ownformat);
       }
     });
   }
@@ -72,7 +77,7 @@ class OwnFormatSelector extends Component {
       return (
         <div className="main-page">
           <h1>No Formats Found</h1>
-          <h6>You may create one <Link to="/format">here</Link></h6>
+          <h6>You may create one <Link to={ROUTES.format}>here</Link></h6>
         </div>
       );
     }
@@ -90,8 +95,8 @@ class OwnFormatSelector extends Component {
               <Card.Title>{format.name}</Card.Title>
               <Card.Text>{format.description}</Card.Text>
               <div className="d-flex justify-content-between mt-auto align-items-center">
-                <Card.Link as={Link} to={"/format/" + format.id}>Edit Format</Card.Link>
-                <Card.Link as={Link} to={"/deck/" + format.id}>Make Deck</Card.Link>
+                <Card.Link as={Link} to={ROUTES.format + "/" + format.id}>Edit Format</Card.Link>
+                <Card.Link as={Link} to={ROUTES.deck + "/" + format.id}>Make Deck</Card.Link>
                 <Button variant="danger" className="ml-4" onClick={event => this.removeFormat(format.id)}><FontAwesomeIcon icon="times" className="fa-w-16" /></Button>
               </div>
             </Card.Body> 

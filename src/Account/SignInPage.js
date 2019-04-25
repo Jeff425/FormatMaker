@@ -3,6 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { Link, withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
+import ROUTES from './../ROUTES';
 
 class SignInPageBase extends Component {
   
@@ -37,8 +38,9 @@ class SignInPageBase extends Component {
       <div className="main-page">
         <div>
           <h1>Sign in to FormatMaker</h1>
-            <SignInForm firebase={this.props.firebase} />
-          <p className="mt-3">Don't have an account? <Link to={"/signup" + (this.props.match.params.redirect ? ("/" + this.props.match.params.redirect) : "")}>Sign Up Here</Link></p>
+          <SignInForm firebase={this.props.firebase} />
+          <p className="mt-3">Don't have an account? <Link to={ROUTES.signup}>Sign Up Here</Link></p>
+          <p className="mt-3"><Link to={ROUTES.passwordforget}>Forgot Password?</Link></p>
         </div>
       </div>
     );
@@ -85,11 +87,11 @@ class SignInForm extends Component {
       <Form noValidate className="singleApp" onSubmit={this.handleSubmit} validated={this.state.validated}>
         <Form.Group>
           <Form.Label>Email address</Form.Label>
-          <Form.Control required type="email" placeholder="Enter email" onChange={event => this.onFormChange(event, "email")}  />
+          <Form.Control required type="email" placeholder="Enter email" onChange={event => this.onFormChange(event, "email")} value={this.state.email} />
         </Form.Group>
         <Form.Group>
           <Form.Label>Password</Form.Label>
-          <Form.Control required type="password" placeholder="Enter password" onChange={event => this.onFormChange(event, "pwd")} />
+          <Form.Control required type="password" placeholder="Enter password" onChange={event => this.onFormChange(event, "pwd")} value={this.state.pwd} />
         </Form.Group>
         {this.state.feedback && <p>{this.state.feedback}</p>}
         <Button variant="primary" type="submit" disabled={this.state.sending}>Sign in</Button>

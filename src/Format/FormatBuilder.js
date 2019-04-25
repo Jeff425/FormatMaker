@@ -11,6 +11,7 @@ import { Link, withRouter } from 'react-router-dom';
 import FormatEditor from './FormatEditor';
 import ScryfallLoader from './ScryfallLoader';
 import { withFirebase } from './../Firebase/FirebaseContext';
+import ROUTES from './../ROUTES';
 
 class FormatBuilderBase extends Component {
   
@@ -115,6 +116,10 @@ class FormatBuilderBase extends Component {
   componentDidMount() {
     this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
       if (auth) {
+        if (!auth.emailVerified) {
+          this.props.history.push(ROUTES.emailverify);
+          return;
+        }
         this.setState({authUser: auth});
         if (this.props.match.params.formatId) {
           this.readFormat(this.props.match.params.formatId);
@@ -122,7 +127,7 @@ class FormatBuilderBase extends Component {
           this.setState({isLoading: false});
         }
       } else {
-        this.props.history.push("/signin/" + encodeURIComponent("format/") + (this.props.match.params.formatId ? encodeURIComponent(this.props.match.params.formatId) : ""));
+        this.props.history.push(ROUTES.signin + ROUTES.format + encodeURIComponent("/") + (this.props.match.params.formatId ? encodeURIComponent(this.props.match.params.formatId) : ""));
       }
     });
   }
@@ -214,7 +219,7 @@ class FormatBuilderBase extends Component {
   
   successWrite(firebaseId) {
     this.setState({didSucceed: true});
-    this.props.history.push("/format/" + firebaseId);
+    this.props.history.push(ROUTES.format + "/" + firebaseId);
     this.readFormat(firebaseId);
   }
   
@@ -244,7 +249,7 @@ class FormatBuilderBase extends Component {
   }
   
   errorRead(errorMessage) {
-    this.props.history.push("/format/");
+    this.props.history.push(ROUTES.format);
     this.setState({error: errorMessage, isLoading: false});
   }
   
@@ -310,7 +315,7 @@ class FormatBuilderBase extends Component {
         {this.state.didSucceed && <Row>
           <Alert dismissible variant="success" className="fullWidth ml-3 mr-3" onClose={() => this.setState({didSucceed: false})}>
             <Alert.Heading>Success!</Alert.Heading>
-            <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={"/format/" + this.props.match.params.formatId}>directly</Link> or you may create decks for your format <Link to={"/deck/" + this.props.match.params.formatId}>here.</Link></p>
+            <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={ROUTES.format + "/" + this.props.match.params.formatId}>directly</Link> or you may create decks for your format <Link to={ROUTES.deck + "/" + this.props.match.params.formatId}>here.</Link></p>
           </Alert>      
         </Row>}
         <Row>

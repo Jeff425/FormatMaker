@@ -7,10 +7,14 @@ import FormatBuilder from './Format/FormatBuilder';
 import DeckBuilder from './Deck/DeckBuilder';
 import SignInPage from './Account/SignInPage';
 import SignUpPage from './Account/SignUpPage';
+import PasswordForget from './Account/PasswordForget';
+import PasswordChange from './Account/PasswordChange';
+import EmailVerify from './Account/EmailVerify';
 import FormatSelector from './Format/FormatSelector';
 import OwnFormatSelector from './Format/OwnFormatSelector';
 import HowToUse from './HowToUse';
 import { withFirebase } from './Firebase/FirebaseContext';
+import ROUTES from './ROUTES';
 
 class App extends Component {
   
@@ -36,13 +40,16 @@ class App extends Component {
           <NavigationBar authUser={this.state.authUser} />
           <div className="content">
             <Route exact={true} path="/" component={MainPage} />
-            <Route path="/format/:formatId?" component={FormatBuilder} />
-            <Route path="/deck/:formatId" component={DeckBuilder} />
-            <Route exact={true} path="/deck" component={FormatSelector} />
-            <Route path="/signin/:redirect?" component={SignInPage} />
-            <Route path="/signup/:redirect?" component={SignUpPage} />
-            <Route path="/ownformats" component={OwnFormatSelector} />
-            <Route path="/howto" component={HowToUse} />
+            <Route path={ROUTES.format + "/:formatId?"} component={FormatBuilder} />
+            <Route path={ROUTES.deck + "/:formatId"} component={DeckBuilder} />
+            <Route exact={true} path={ROUTES.deck} component={FormatSelector} />
+            <Route path={ROUTES.signin + "/:redirect?"} component={SignInPage} />
+            <Route path={ROUTES.signup} component={SignUpPage} />
+            <Route path={ROUTES.ownformat} component={OwnFormatSelector} />
+            <Route path={ROUTES.howto} component={HowToUse} />
+            <Route path={ROUTES.passwordforget} component={PasswordForget} />
+            <Route path={ROUTES.passwordchange} component={PasswordChange} />
+            <Route path={ROUTES.emailverify} component={EmailVerify} />
           </div>
         </div>
       </Router>

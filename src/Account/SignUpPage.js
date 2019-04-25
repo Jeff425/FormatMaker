@@ -3,6 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
+import ROUTES from './../ROUTES';
 
 class SignUpPageBase extends Component {
   
@@ -14,7 +15,7 @@ class SignUpPageBase extends Component {
   componentDidMount() {
     this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
       if (auth) {
-        this.props.history.push("/" + (this.props.match.params.redirect ? decodeURIComponent(this.props.match.params.redirect) : ""));
+        this.props.history.push(ROUTES.emailverify);
       } else {
         this.setState({isLoading: false});
       }

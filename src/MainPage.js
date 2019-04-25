@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Button from 'react-bootstrap/Button';
 import { Link } from 'react-router-dom';
+import ROUTES from './ROUTES';
 
 class MainPage extends Component {
   render() {
@@ -9,10 +10,10 @@ class MainPage extends Component {
         <h1>FormatMaker</h1>
         <h4>Create custom magic formats and build decks for your formats</h4>
         <div className="main-page-button-bar">
-          <Link to="/format" className="main-page-buttons">
+          <Link to={ROUTES.format} className="main-page-buttons">
             <Button variant="primary" size="lg" className="fullWidth">Create Format</Button>
           </Link>
-          <Link to="/deck" className="main-page-buttons">
+          <Link to={ROUTES.deck} className="main-page-buttons">
             <Button variant="primary" size="lg" className="fullWidth">Build Deck</Button>
           </Link>
         </div>
