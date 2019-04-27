@@ -28,6 +28,8 @@ class DeckManager extends Component {
   constructor(props) {
     super(props);
     this.typeCount = this.typeCount.bind(this);
+    this.deckLoadRef = null;
+    this.deckSelectionRef = null;
   }
   
   typeCount(typeString) {
@@ -43,6 +45,7 @@ class DeckManager extends Component {
     const banned = [];
     const warningTotalGroups = [];
     const warningCopies = [];
+    let notLegal = false;
     if (this.props.deck) {
       for (let i = 0; i < this.props.groups.length; i++) {
         warningTotalGroups.push({count: 0, cards: []});
@@ -63,6 +66,7 @@ class DeckManager extends Component {
           warningCopies.push(card);
         }
         if (this.props.groups[groupIndex].maxTotal > 0 && warningTotalGroups[groupIndex].count > this.props.groups[groupIndex].maxTotal) {
+          notLegal = true;
           warningTotalGroups[groupIndex].cards.push(card);
         }
       });
@@ -75,15 +79,17 @@ class DeckManager extends Component {
     const creatureCount = this.typeCount("creature");
     const instantSorceryCount = this.typeCount("instant") + this.typeCount("sorcery");
     const otherCount = deckCount - landCount - creatureCount - instantSorceryCount;
+    notLegal = notLegal || banned.length > 0 || warningCopies.length > 0;
     if (this.props.deck && this.props.deck.length > 0) {
       return (
         <div className="AppContainer">
-          <input type="file" ref="deckLoader" className="hidden" onChange={this.props.onLoad} accept=".deck" />
+          <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck" />
           <h1>Deck Manager</h1>
           <ButtonGroup className="fullWidth mt-4">
             <Button variant="primary" onClick={this.props.onSave}>Export Deck</Button>
-            <Button variant="primary" onClick={() => this.refs.deckLoader.click()}>Import Deck</Button>
+            <Button variant="primary" onClick={() => this.deckLoadRef.click()}>Import Deck</Button>
           </ButtonGroup>
+          {notLegal && <Button variant="danger" className="fullWidth" onClick={() => window.scrollTo(0, this.deckSelectionRef.offsetTop + this.deckSelectionRef.offsetHeight)}>Fix Deck Issues</Button>}
           <Container fluid className="bottomExtension">
             <Row>
               <Col>{"Total Cards: " + deckCount}</Col>
@@ -96,7 +102,7 @@ class DeckManager extends Component {
               <Col>{"Other Cards: " + otherCount}</Col>
             </Row>
           </Container>
-          <div className="centerAlign">
+          <div className="centerAlign" ref={ref => this.deckSelectionRef = ref}>
             {this.props.deck && this.props.deck.map(card => {
               return <CardObj card={card} key={card.id} count={this.props.deckAmount[card.id]} onIncrement={this.props.incrementCard} onRemove={this.props.decrementCard} />;
             })}
@@ -112,9 +118,9 @@ class DeckManager extends Component {
     }
     return (
       <div className="AppContainer">
-        <input type="file" ref="deckLoader" className="hidden" onChange={this.props.onLoad} accept=".deck" />
+        <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck" />
         <h1>Deck Manager</h1>
-        <Button className="fullWidth mt-4" variant="primary" onClick={() => this.refs.deckLoader.click()}>Import Deck</Button>
+        <Button className="fullWidth mt-4" variant="primary" onClick={() => this.deckLoadRef.click()}>Import Deck</Button>
         <div className="mt-4">
           <h3>Import a deck or add cards to begin</h3>
         </div>
