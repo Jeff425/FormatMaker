@@ -17,7 +17,7 @@ class FormatBuilderBase extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {name: "", desc: "", showInfo: false, isLoading: true, formatIds: new Set(), sortingFunc: null, authUser: null, error: "", didSucceed: false, groups: [
+    this.state = {name: "", desc: "", showInfo: false, isLoading: true, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, groups: [
       {
         "groupName": "Legal Cards",
         "maxTotal": 0,
@@ -144,8 +144,8 @@ class FormatBuilderBase extends Component {
     if(this.state.currentTab === "addGroup") {
       return;
     }
-    if (card.id && !this.state.formatIds.has(card.id)) {
-      this.setState({formatIds: this.state.formatIds.add(card.id)});
+    if (card.name && !this.state.formatIds.has(card.name)) {
+      this.setState({formatIds: this.state.formatIds.add(card.name)});
       const newGroups = [...this.state.groups];
       const groupName = this.state.currentTab.substring(6); 
       newGroups.forEach(group => {
@@ -164,9 +164,9 @@ class FormatBuilderBase extends Component {
     }
     const newCards = [];
     cards.forEach(card => {
-      if (card.id && !this.state.formatIds.has(card.id)) {
+      if (card.name && !this.state.formatIds.has(card.name)) {
         newCards.push(card);
-        this.state.formatIds.add(card.id);
+        this.state.formatIds.add(card.name);
       }
     });
     const newGroups = [...this.state.groups];
@@ -182,7 +182,7 @@ class FormatBuilderBase extends Component {
   
   remove(card) {
     const idCopy = new Set(this.state.formatIds);
-    idCopy.delete(card.id);
+    idCopy.delete(card.name);
     this.setState({formatIds: idCopy});
     const newGroups = [...this.state.groups];
     const groupName = this.state.currentTab.substring(6); 
@@ -237,7 +237,7 @@ class FormatBuilderBase extends Component {
     const format = JSON.parse(formatText);
     format.groups.forEach(group => {
       group.cards.forEach(card => {
-        formatIds.add(card.id);
+        formatIds.add(card.name);
       });
     });
     this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "addGroup"});

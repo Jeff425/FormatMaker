@@ -32,7 +32,7 @@ class DeckBuilder extends Component {
     const format = JSON.parse(formatText);
     for (let i = 0; i < format.groups.length; i++) {
       format.groups[i].cards.forEach(card => {
-        formatIds[card.id] = {groupIndex: i, card: card}
+        formatIds[card.name] = {groupIndex: i, card: card}
       });
     }
     this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : ""});
@@ -71,7 +71,7 @@ class DeckBuilder extends Component {
       const format = JSON.parse(reader.result);
       for (let i = 0; i < format.groups.length; i++) {
         format.groups[i].cards.forEach(card => {
-          formatIds[card.id] = {groupIndex: i, card: card}
+          formatIds[card.name] = {groupIndex: i, card: card}
         });
       }
       this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : ""});
@@ -86,35 +86,35 @@ class DeckBuilder extends Component {
   */
   
   addCard(card) {
-    if(this.state.deckAmount[card.id]) {
+    if(this.state.deckAmount[card.name]) {
       const newDeckAmount = {...this.state.deckAmount};
-      newDeckAmount[card.id]++;
+      newDeckAmount[card.name]++;
       this.setState({deckAmount: newDeckAmount});
       return;
     }
     const newDeck = this.state.deckSelection.concat(card);
     const newDeckAmount = {...this.state.deckAmount};
-    newDeckAmount[card.id] = 1;
+    newDeckAmount[card.name] = 1;
     this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
   }
   
   removeCard(card) {
-    if(this.state.deckAmount[card.id] > 1) {
+    if(this.state.deckAmount[card.name] > 1) {
       const newDeckAmount = {...this.state.deckAmount};
-      newDeckAmount[card.id]--;
+      newDeckAmount[card.name]--;
       this.setState({deckAmount: newDeckAmount});
       return;
     }
     const newDeck = this.state.deckSelection.filter(icard => icard !== card);
     const newDeckAmount = {...this.state.deckAmount};
-    delete newDeckAmount[card.id];
+    delete newDeckAmount[card.name];
     this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
   }
   
   saveDeck() {
     let saveString = "";
     this.state.deckSelection.forEach(card => {
-      saveString += this.state.deckAmount[card.id] + " " + card.name + "\n";
+      saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
     });
     const blob = new Blob([saveString], {type: "plain/text"});
     saveAs(blob, "customDeck" + Date.now() + ".deck");
@@ -144,7 +144,7 @@ class DeckBuilder extends Component {
           const card = allCards[i];
           if (name === card.name) {
             selection.push(card);
-            amount[card.id] = count;
+            amount[card.name] = count;
             break;
           }
         }
