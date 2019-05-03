@@ -6,20 +6,22 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
+import Pagination from 'react-bootstrap/Pagination';
 
 class FormatEditor extends Component {
    
   constructor(props) {
     super(props);
-    this.state = {cardCheck: () => {return true;}, showEdit: false};
+    this.state = {cardCheck: () => {return true;}, showEdit: false, page: 1};
     this.onOmniChange = this.onOmniChange.bind(this); 
     this.onEdit = this.onEdit.bind(this);
     this.onSubmitGroupHide = this.onSubmitGroupHide.bind(this);
     this.checkGroupName = this.checkGroupName.bind(this);
+    this.onTabChange = this.onTabChange.bind(this);
   }
   
   onOmniChange(checkCard) {
-    this.setState({cardCheck: checkCard});
+    this.setState({cardCheck: checkCard, page: 1});
   }
   
   onEdit() {
@@ -43,6 +45,11 @@ class FormatEditor extends Component {
     return true;
   }
   
+  onTabChange(key) {
+    this.setState({page: 1});
+    this.props.onTabChange(key);
+  }
+  
   // <input type="file" ref="formatLoader" className="hidden" onChange={this.props.onLoad} accept=".format" />
   // <Button variant="primary" onClick={() => this.refs.formatLoader.click()}>Load</Button>
   render() {  
@@ -56,10 +63,27 @@ class FormatEditor extends Component {
           <Button variant="primary" className="flexShare" onClick={this.props.onInfo}>Info</Button>
         </ButtonGroup>
         <div className="fullWidth mt-1">
-          <Tabs activeKey={this.props.tabKey} onSelect={this.props.onTabChange}>
+          <Tabs activeKey={this.props.tabKey} onSelect={this.onTabChange}>
             {this.props.groups && this.props.groups.map(group => {
+              const tabKey = "extra_" + group.groupName;
+              const cards = group.cards.filter(this.state.cardCheck);
+              const pageCount = Math.ceil(cards.length / 60);
+              const pages = [];
+              if (pageCount > 0) {
+                if (this.state.page > 1) {
+                  pages.push(<Pagination.First onClick={() => this.setState({page: 1})} key={-2}/>);
+                  pages.push(<Pagination.Prev onClick={() => this.setState({page: this.state.page - 1})} key={-1}/>);
+                }
+                for(let i = Math.max(1, this.state.page - 2); i < Math.min(pageCount + 1, this.state.page + 3); i++) {
+                  pages.push(<Pagination.Item key={i} active={i === this.state.page} onClick={() => this.setState({page: i})}>{i}</Pagination.Item>);
+                }
+                if (this.state.page < pageCount) {
+                  pages.push(<Pagination.Next onClick={() => this.setState({page: this.state.page + 1})} key={pageCount + 1} />);
+                  pages.push(<Pagination.Last onClick={() => this.setState({page: pageCount})} key={pageCount + 2} />);
+                }
+              }
               return (
-                <Tab eventKey={"extra_" + group.groupName} title={group.groupName} key={"extra_" + group.groupName}>
+                <Tab eventKey={tabKey} title={group.groupName} key={tabKey}>
                   {this.state.showEdit && (
                     <GroupEditor onSubmitGroup={this.onSubmitGroupHide} onDeleteGroup={this.props.onDeleteGroup} groupName={group.groupName} maxTotal={group.maxTotal} maxCopies={group.maxCopies} />
                   )}
@@ -74,13 +98,14 @@ class FormatEditor extends Component {
                       <Button variant="primary" onClick={this.onEdit}>Edit</Button>
                     </div>
                   )}
-                  <div className="centerAlign">
-                    {group.cards && group.cards.map(card => {
-                      if (this.state.cardCheck(card)) {
-                        return <CardObj card={card} key={card.id} onRemove={this.props.removeCard} />
-                      }
-                      return null;
-                    })}
+                  {this.props.tabKey === tabKey && (
+                    <div className="centerAlign">
+                      {cards && cards.slice((this.state.page - 1) * 60, this.state.page * 60).map(card =>
+                        <CardObj card={card} key={card.id} onRemove={this.props.removeCard} />
+                      )}
+                    </div>)}
+                  <div className="d-flex justify-content-center mt-2">
+                    <Pagination size="lg">{pages}</Pagination>
                   </div>
                 </Tab>
               );

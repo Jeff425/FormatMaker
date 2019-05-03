@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
+import Pagination from 'react-bootstrap/Pagination';
 import CardObj from './../CardObj';
 
 class ScryfallLoader extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {searchString: "", searchEnabled: true, searchResults: []};
+    this.state = {searchString: "", searchEnabled: true, searchResults: [], page: 1};
     this.scryfallSearch = this.scryfallSearch.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchKeyPress = this.onSearchKeyPress.bind(this);
@@ -28,8 +29,7 @@ class ScryfallLoader extends Component {
   }
   
   scryfallSearch() {
-    this.setState({searchEnabled: false});
-    this.setState({searchResults: []});
+    this.setState({searchEnabled: false, searchResults: [], page: 1});
     this.scryfallLoop("https://api.scryfall.com/cards/search?q=" + this.state.searchString);   
   }
   
@@ -83,6 +83,21 @@ class ScryfallLoader extends Component {
   }
   
   render() {
+    const pageCount = Math.ceil(this.state.searchResults.length / 60);
+    const pages = [];
+    if (pageCount > 0) {
+      if (this.state.page > 1) {
+        pages.push(<Pagination.First onClick={() => this.setState({page: 1})} key={-2}/>);
+        pages.push(<Pagination.Prev onClick={() => this.setState({page: this.state.page - 1})} key={-1}/>);
+      }
+      for(let i = Math.max(1, this.state.page - 2); i < Math.min(pageCount + 1, this.state.page + 3); i++) {
+        pages.push(<Pagination.Item key={i} active={i === this.state.page} onClick={() => this.setState({page: i})}>{i}</Pagination.Item>);
+      }
+      if (this.state.page < pageCount) {
+        pages.push(<Pagination.Next onClick={() => this.setState({page: this.state.page + 1})} key={pageCount + 1} />);
+        pages.push(<Pagination.Last onClick={() => this.setState({page: pageCount})} key={pageCount + 2} />);
+      }
+    }
     return (
       <div className="AppContainer">
         <h1>Scryfall Loader</h1>
@@ -101,11 +116,15 @@ class ScryfallLoader extends Component {
         </div>
         {this.state.searchEnabled && this.state.searchResults.length > 0 && <Button variant="primary" className="mb-1" onClick={this.addAllSearch}>Add all to format</Button>}
         <div className="centerAlign">
-          {this.state.searchEnabled && this.state.searchResults.map(card => (
+          {this.state.searchEnabled && this.state.searchResults.slice((this.state.page - 1) * 60, this.state.page * 60).map(card => (
             <CardObj card={card} key={card.id} onSelect={this.props.addCard} onRemove={this.removeFromSearch} />
           ))}
           {!this.state.searchEnabled && <img className="mt-4" src={process.env.PUBLIC_URL + "/loader.gif"} alt="loading" />}
         </div>
+        {this.state.searchEnabled && (
+          <div className="d-flex justify-content-center mt-2">
+            <Pagination size="lg">{pages}</Pagination>
+          </div>)}
       </div>
     );
   }
