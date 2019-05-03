@@ -42,7 +42,7 @@ class CardSelection extends Component {
                   <div className="centerAlign">
                     {group.cards && group.cards.map(card => {
                       if (this.state.cardCheck(card)) {
-                        return <CardObj card={card} key={card.id} onSelect={this.props.addCard} />
+                        return <CardObj card={card} key={card.id} onSelect={this.props.addCard} onSide={card => this.props.addCard(card, true)} />
                       }
                       return null;
                     })}

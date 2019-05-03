@@ -11,7 +11,7 @@ class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}};
+    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}};
     this.sort = this.sort.bind(this);
     //this.loadFormat = this.loadFormat.bind(this);
     this.addCard = this.addCard.bind(this);
@@ -85,30 +85,50 @@ class DeckBuilder extends Component {
   }
   */
   
-  addCard(card) {
-    if(this.state.deckAmount[card.name]) {
-      const newDeckAmount = {...this.state.deckAmount};
+  addCard(card, sideboard = false) {
+    const deckSelection = sideboard ? this.state.sideSelection : this.state.deckSelection;
+    const deckAmount = sideboard ? this.state.sideAmount : this.state.deckAmount;
+    if(deckAmount[card.name]) {
+      const newDeckAmount = {...deckAmount};
       newDeckAmount[card.name]++;
-      this.setState({deckAmount: newDeckAmount});
+      if (sideboard) {
+        this.setState({sideAmount : newDeckAmount});
+      } else {
+        this.setState({deckAmount: newDeckAmount});
+      }
       return;
     }
-    const newDeck = this.state.deckSelection.concat(card);
-    const newDeckAmount = {...this.state.deckAmount};
+    const newDeck = deckSelection.concat(card);
+    const newDeckAmount = {...deckAmount};
     newDeckAmount[card.name] = 1;
-    this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
+    if (sideboard) {
+      this.setState({sideSelection: newDeck, sideAmount: newDeckAmount});
+    } else {
+      this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
+    }
   }
   
-  removeCard(card) {
-    if(this.state.deckAmount[card.name] > 1) {
-      const newDeckAmount = {...this.state.deckAmount};
+  removeCard(card, sideboard = false) {
+    const deckSelection = sideboard ? this.state.sideSelection : this.state.deckSelection;
+    const deckAmount = sideboard ? this.state.sideAmount : this.state.deckAmount;
+    if(deckAmount[card.name] > 1) {
+      const newDeckAmount = {...deckAmount};
       newDeckAmount[card.name]--;
-      this.setState({deckAmount: newDeckAmount});
+      if (sideboard) {
+        this.setState({sideAmount : newDeckAmount});
+      } else {
+        this.setState({deckAmount: newDeckAmount});
+      }
       return;
     }
-    const newDeck = this.state.deckSelection.filter(icard => icard !== card);
-    const newDeckAmount = {...this.state.deckAmount};
+    const newDeck = deckSelection.filter(icard => icard !== card);
+    const newDeckAmount = {...deckAmount};
     delete newDeckAmount[card.name];
-    this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
+    if (sideboard) {
+      this.setState({sideSelection: newDeck, sideAmount: newDeckAmount});
+    } else {
+      this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
+    }
   }
   
   saveDeck() {
@@ -116,6 +136,12 @@ class DeckBuilder extends Component {
     this.state.deckSelection.forEach(card => {
       saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
     });
+    if (this.state.sideSelection.length > 0) {
+      saveString += "//Sideboard\n";
+      this.state.sideSelection.forEach(card => {
+        saveString += this.state.sideAmount[card.name] + " " + card.name + "\n";
+      });
+    }
     const blob = new Blob([saveString], {type: "plain/text"});
     saveAs(blob, "customDeck" + Date.now() + ".deck");
     /*
@@ -133,23 +159,31 @@ class DeckBuilder extends Component {
     reader.onload = () => {
       const selection = [];
       const amount = {};
-      const allCards = Object.values(this.state.formatIds).map(formatCard => formatCard.card);
+      const sideSelection = [];
+      const sideAmount = {};
+      let isSideboard = false;
       reader.result.split("\n").forEach(line => {
+        if (!isSideboard && line === "//Sideboard") {
+          isSideboard = true;
+          return;
+        }
         const count = parseInt(line.substr(0, line.indexOf(" ")));
         if (isNaN(count)) {
           return;
         }
         const name = line.substr(line.indexOf(" ") + 1);
-        for (let i = 0; i < allCards.length; i++) {
-          const card = allCards[i];
-          if (name === card.name) {
+        const card = this.state.formatIds[name].card;
+        if (card) {
+          if (isSideboard) {
+            sideSelection.push(card);
+            sideAmount[card.name] = count;
+          } else {
             selection.push(card);
             amount[card.name] = count;
-            break;
           }
         }
       });
-      this.setState({deckSelection: selection, deckAmount: amount});
+      this.setState({deckSelection: selection, deckAmount: amount, sideSelection: sideSelection, sideAmount: sideAmount});
       /*
       const deck = JSON.parse(reader.result);
       this.setState({deckSelection: deck.selection, deckAmount: deck.amount});
@@ -179,7 +213,9 @@ class DeckBuilder extends Component {
             <Col lg>
               <DeckManager 
                 deck={this.state.deckSelection} 
-                deckAmount={this.state.deckAmount} 
+                deckAmount={this.state.deckAmount}
+                side={this.state.sideSelection}
+                sideAmount={this.state.sideAmount}
                 incrementCard={this.addCard} 
                 decrementCard={this.removeCard} 
                 onSave={this.saveDeck} 

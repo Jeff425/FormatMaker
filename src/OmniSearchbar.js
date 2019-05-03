@@ -29,7 +29,7 @@ class OmniSearchbar extends Component {
     this.setState({searchString: searchString});
     this.searchTimer = setTimeout(() => {     
       this.props.onSearchChange(card => this.checkCard(card, this.state.searchString));
-    }, 2000);
+    }, 750);
   }
   
   onCheckboxChange() {
