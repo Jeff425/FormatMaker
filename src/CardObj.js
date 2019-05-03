@@ -25,7 +25,7 @@ class CardObj extends Component {
           key={this.props.card.id} />
         <Button variant="info" className="cardSearch" onClick={this.viewCard}><FontAwesomeIcon icon="search" className="fa-w-16" /></Button>
         {this.props.onRemove && (
-          <Button variant="danger" className="cardRemove" onClick={event => this.props.onRemove(this.props.card)}>{this.props.subtract ? <b>-1</b> : <FontAwesomeIcon icon="times" className="fa-w-16" />}</Button>
+          <Button variant="danger" className="cardRemove" onClick={event => this.props.onRemove(this.props.card)}>{(this.props.subtract && this.props.count && this.props.count > 1) ? <b>-1</b> : <FontAwesomeIcon icon="times" className="fa-w-16" />}</Button>
         )}
         {this.props.count && (
           <Button variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)}>{this.props.count}</Button>
