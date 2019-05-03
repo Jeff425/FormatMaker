@@ -136,12 +136,13 @@ class DeckManager extends Component {
               <Col>{"Other Cards: " + otherCount}</Col>
             </Row>
           </Container>
-          <div className="centerAlign" ref={ref => this.deckSelectionRef = ref}>
+          <div className="centerAlign">
             {this.props.deck && this.props.deck.map(card => {
               return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={card => {this.props.decrementCard(card); this.props.incrementCard(card, true)}} subtract={true} />;
             })}
           </div>
           <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount + ")"} cards={this.props.side} subtract={true} />
+          <div ref={ref => this.deckSelectionRef = ref} />
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Banned (Please remove all cards)" cards={banned} subtract={true} />
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Too many copies (Please lower card counts)" cards={warningCopies} subtract={true} />
           {warningTotalGroups.map((group, index) => {
