@@ -27,6 +27,11 @@ body {
   align-items: center;
   justify-content: center;
   flex: auto;
+  width: 90%;
+  
+  h4 {
+    text-align: center;
+  }
 }
 
 .main-page-button-bar {
@@ -65,6 +70,7 @@ body {
 .omniCheckboxes {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
 }
 
 .AppContainer {
@@ -105,7 +111,8 @@ body {
 }
 
 .singleApp {
-  min-width: 500px;
+  max-width: 500px;
+  width: 90%;
 }
 
 .formatCard {

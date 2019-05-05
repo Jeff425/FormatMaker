@@ -33,6 +33,9 @@ class CardObj extends Component {
         {this.props.onSide && (
           <Button variant="info" className="sideboard" onClick={event => this.props.onSide(this.props.card)}><b>S</b></Button>
         )}
+        {this.props.onMain && (
+          <Button variant="info" className="sideboard" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
+        )}
       </div>
     );
   }

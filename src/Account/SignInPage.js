@@ -36,7 +36,7 @@ class SignInPageBase extends Component {
     }
     return (
       <div className="main-page">
-        <div>
+        <div className="singleApp">
           <h1>Sign in to FormatMaker</h1>
           <SignInForm firebase={this.props.firebase} />
           <p className="mt-3">Don't have an account? <Link to={ROUTES.signup}>Sign Up Here</Link></p>
@@ -84,7 +84,7 @@ class SignInForm extends Component {
   
   render() {
     return (
-      <Form noValidate className="singleApp" onSubmit={this.handleSubmit} validated={this.state.validated}>
+      <Form noValidate onSubmit={this.handleSubmit} validated={this.state.validated}>
         <Form.Group>
           <Form.Label>Email address</Form.Label>
           <Form.Control required type="email" placeholder="Enter email" onChange={event => this.onFormChange(event, "email")} value={this.state.email} />

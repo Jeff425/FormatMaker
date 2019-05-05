@@ -172,8 +172,9 @@ class DeckBuilder extends Component {
           return;
         }
         const name = line.substr(line.indexOf(" ") + 1);
-        const card = this.state.formatIds[name].card;
-        if (card) {
+        const cardDetails = this.state.formatIds[name];
+        if (cardDetails) {
+          const card = cardDetails.card;
           if (isSideboard) {
             sideSelection.push(card);
             sideAmount[card.name] = count;

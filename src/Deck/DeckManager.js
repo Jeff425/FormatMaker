@@ -16,7 +16,7 @@ function CardSection(props) {
       <TitledDivider title={props.title} />
       <div className="centerAlign">
         {props.cards.map(card => {
-          return <CardObj card={card} key={card.name} count={props.deckAmount[card.name]} onRemove={props.decrementCard} onIncrement={props.incrementCard} subtract={props.subtract} />
+          return <CardObj card={card} key={card.name} count={props.deckAmount[card.name]} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} />
         })}
       </div>
     </div>
@@ -141,7 +141,7 @@ class DeckManager extends Component {
               return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={card => {this.props.decrementCard(card); this.props.incrementCard(card, true)}} subtract={true} />;
             })}
           </div>
-          <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount + ")"} cards={this.props.side} subtract={true} />
+          <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount + ")"} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
           <div ref={ref => this.deckSelectionRef = ref} />
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Banned (Please remove all cards)" cards={banned} subtract={true} />
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Too many copies (Please lower card counts)" cards={warningCopies} subtract={true} />

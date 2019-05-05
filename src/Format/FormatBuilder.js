@@ -296,7 +296,7 @@ class FormatBuilderBase extends Component {
               <FormLabel>Format Description</FormLabel>
               <FormControl as="textarea" rows="5" value={this.state.desc} onChange={event => this.editControl(event, "desc")} maxLength={250} />
             </FormGroup>
-            <div className="singleApp d-flex flex-row">
+            <div className="d-flex flex-row">
               <Button variant="primary" size="lg" onClick={() => this.setState({showInfo: false})}>Back</Button>
               <Button variant="primary" size="lg" className="flex-grow-1 ml-3" onClick={this.saveFormat}>Submit</Button>
             </div>

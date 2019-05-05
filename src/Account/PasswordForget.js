@@ -50,15 +50,17 @@ class PasswordForget extends Component {
   render() {  
     return (
       <div className="main-page">
+        <div className="singleApp">
         <h1>Password Reset</h1>
-        <Form noValidate className="singleApp mt-3" onSubmit={this.handleSubmit} validated={this.state.validated}>
-          <Form.Group>
-            <Form.Label>Email address</Form.Label>
-            <Form.Control required type="email" placeholder="Enter email" onChange={event => this.onFormChange(event, "email")} value={this.state.email} />
-          </Form.Group>
-          {this.state.feedback && <p>{this.state.feedback}</p>}
-          <Button variant="primary" type="submit" disabled={this.state.sending || this.state.email === ""}>Send Email</Button>
-        </Form>
+          <Form noValidate className="mt-3" onSubmit={this.handleSubmit} validated={this.state.validated}>
+            <Form.Group>
+              <Form.Label>Email address</Form.Label>
+              <Form.Control required type="email" placeholder="Enter email" onChange={event => this.onFormChange(event, "email")} value={this.state.email} />
+            </Form.Group>
+            {this.state.feedback && <p>{this.state.feedback}</p>}
+            <Button variant="primary" type="submit" disabled={this.state.sending || this.state.email === ""}>Send Email</Button>
+          </Form>
+        </div>
       </div>
     );
   }

@@ -19,6 +19,7 @@ class OmniSearchbar extends Component {
     if (this.props.sortPass) {
       this.props.sortPass(this.cmcSort);
     }
+    this.colorRefs = {};
   }
   
   onSearchChange(event) {
@@ -70,10 +71,10 @@ class OmniSearchbar extends Component {
       }
     }
     if(colors.length === 0) {
-      return this.refs.colorCheck_Colorless.checked;
+      return this.colorRefs.colorCheck_Colorless.checked;
     }
     for(let i = 0; i < colors.length; i++) {
-      if(!this.refs["colorCheck_" + colors[i]].checked) {
+      if(!this.colorRefs["colorCheck_" + colors[i]].checked) {
         return false;
       }
     }
@@ -112,12 +113,12 @@ class OmniSearchbar extends Component {
           </InputGroup.Append>)}
         </InputGroup>
         <div className="omniCheckboxes">
-          <FormCheck inline label="White" type="checkbox" ref="colorCheck_W" defaultChecked={true} onChange={this.onCheckboxChange} />
-          <FormCheck inline label="Blue" type="checkbox" ref="colorCheck_U" defaultChecked={true} onChange={this.onCheckboxChange} />
-          <FormCheck inline label="Black" type="checkbox" ref="colorCheck_B" defaultChecked={true} onChange={this.onCheckboxChange} />
-          <FormCheck inline label="Red" type="checkbox" ref="colorCheck_R" defaultChecked={true} onChange={this.onCheckboxChange} />
-          <FormCheck inline label="Green" type="checkbox" ref="colorCheck_G" defaultChecked={true} onChange={this.onCheckboxChange} />
-          <FormCheck inline label="Colorless" type="checkbox" ref="colorCheck_Colorless" defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="White" type="checkbox" ref={ref => this.colorRefs["colorCheck_W"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Blue" type="checkbox" ref={ref => this.colorRefs["colorCheck_U"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Black" type="checkbox" ref={ref => this.colorRefs["colorCheck_B"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Red" type="checkbox" ref={ref => this.colorRefs["colorCheck_R"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Green" type="checkbox" ref={ref => this.colorRefs["colorCheck_G"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Colorless" type="checkbox" ref={ref => this.colorRefs["colorCheck_Colorless"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
         </div>
       </div>
     );
