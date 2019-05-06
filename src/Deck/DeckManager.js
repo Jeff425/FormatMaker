@@ -124,6 +124,7 @@ class DeckManager extends Component {
             <Button variant="primary" onClick={() => this.deckLoadRef.click()}>Import Deck</Button>
           </ButtonGroup>
           {notLegal && <Button variant="danger" className="fullWidth" onClick={() => window.scrollTo(0, this.deckSelectionRef.offsetTop + this.deckSelectionRef.offsetHeight)}>Fix Deck Issues</Button>}
+          <Button variant="secondary" className="fullWidth" onClick={this.props.onPurchase}>Purchase on TCGPlayer</Button>
           <Container fluid className="bottomExtension">
             <Row>
               <Col>{"Total Cards: " + deckCount}</Col>

@@ -10,7 +10,6 @@ class CardObj extends Component {
   }
   
   viewCard() {
-    console.log(this.props.card);
     window.open(this.props.card.gathererLink, "_blank");
   }
   
@@ -31,10 +30,10 @@ class CardObj extends Component {
           <Button variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)}>{this.props.count}</Button>
         )}
         {this.props.onSide && (
-          <Button variant="info" className="sideboard" onClick={event => this.props.onSide(this.props.card)}><b>S</b></Button>
+          <Button variant="primary" className="sideboard" onClick={event => this.props.onSide(this.props.card)}><b>S</b></Button>
         )}
         {this.props.onMain && (
-          <Button variant="info" className="sideboard" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
+          <Button variant="primary" className="sideboard" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
         )}
       </div>
     );

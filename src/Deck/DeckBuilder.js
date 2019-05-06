@@ -21,6 +21,8 @@ class DeckBuilder extends Component {
     this.onTabChange = this.onTabChange.bind(this);
     this.successRead = this.successRead.bind(this);
     this.errorRead = this.errorRead.bind(this);
+    this.purchaseDeck = this.purchaseDeck.bind(this);
+    this.deckString = this.deckString.bind(this);
   }
   
   componentDidMount() {
@@ -131,17 +133,24 @@ class DeckBuilder extends Component {
     }
   }
   
-  saveDeck() {
+  deckString(url = false) {
     let saveString = "";
     this.state.deckSelection.forEach(card => {
-      saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
+      saveString += this.state.deckAmount[card.name] + " " + card.name + (url ? "||" : "\n");
     });
     if (this.state.sideSelection.length > 0) {
-      saveString += "//Sideboard\n";
+      if (!url) {
+        saveString += "//Sideboard\n";
+      }
       this.state.sideSelection.forEach(card => {
-        saveString += this.state.sideAmount[card.name] + " " + card.name + "\n";
+        saveString += this.state.sideAmount[card.name] + " " + card.name + (url ? "||" : "\n");
       });
     }
+    return saveString.substring(0, saveString.length - (url ? 2 : 1));
+  }
+  
+  saveDeck() {
+    const saveString = this.deckString();
     const blob = new Blob([saveString], {type: "plain/text"});
     saveAs(blob, "customDeck" + Date.now() + ".deck");
     /*
@@ -193,6 +202,21 @@ class DeckBuilder extends Component {
     reader.readAsText(e.target.files[0]);
   }
   
+  purchaseDeck() {
+    /* Temporarily doing GET request. Once TCGPlayer helps with POST requests I can switch back.
+    fetch("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker", {
+      method: "POST",
+      headers: {
+        "Accept": "text/html",
+        "Content-Type": "text/plain;charset=UTF-8",
+      },
+      body: "c=" + "1%20Manalith"//this.deckString(true)
+    })
+    .then(console.log);
+    */
+    window.open("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&c=" + this.deckString(true), "_blank");
+  }
+  
   onTabChange(key) {
     this.setState({currentTab: key});
   }
@@ -223,6 +247,7 @@ class DeckBuilder extends Component {
                 onLoad={this.loadDeck} 
                 groups={this.state.groups}
                 formatIds={this.state.formatIds}
+                onPurchase={this.purchaseDeck}
               />
             </Col>
           </Row>
