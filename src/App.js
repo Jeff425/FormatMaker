@@ -15,6 +15,7 @@ import OwnFormatSelector from './Format/OwnFormatSelector';
 import HowToUse from './HowToUse';
 import { withFirebase } from './Firebase/FirebaseContext';
 import ROUTES from './ROUTES';
+import Footer from './Footer';
 
 class App extends Component {
   
@@ -51,6 +52,7 @@ class App extends Component {
             <Route path={ROUTES.passwordchange} component={PasswordChange} />
             <Route path={ROUTES.emailverify} component={EmailVerify} />
           </div>
+          <Footer />
         </div>
       </Router>
     );
