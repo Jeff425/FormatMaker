@@ -123,7 +123,7 @@ class ScryfallLoader extends Component {
         </div>
         {this.state.searchEnabled && (
           <div className="d-flex justify-content-center mt-2">
-            <Pagination size="lg">{pages}</Pagination>
+            <Pagination>{pages}</Pagination>
           </div>)}
       </div>
     );

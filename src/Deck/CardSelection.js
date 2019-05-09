@@ -70,7 +70,7 @@ class CardSelection extends Component {
                       )}
                     </div>)}
                   <div className="d-flex justify-content-center mt-2">
-                    <Pagination size="lg">{pages}</Pagination>
+                    <Pagination>{pages}</Pagination>
                   </div>
                 </Tab>
               );
