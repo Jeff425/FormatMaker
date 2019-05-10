@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "FormatBuilder",
+  "name": "Create custom MTG Formats",
   "icons": [
     {
       "src": "favicon.ico",

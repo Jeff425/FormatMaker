@@ -7,7 +7,7 @@ class MainPage extends Component {
   render() {
     return (
       <div className="main-page">
-        <h1>FormatMaker</h1>
+        <h1>FormatBuilder</h1>
         <h4>Create custom magic formats and build decks for your formats</h4>
         <div className="main-page-button-bar">
           <Link to={ROUTES.format} className="main-page-buttons">
