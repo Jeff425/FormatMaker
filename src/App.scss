@@ -195,11 +195,15 @@ footer {
       font-size: 2rem;
       position: absolute;
       text-align: center;
-      //font-weight: bold;
+      font-weight: bold;
       left: 50%;
       transform: translateX(-50%);
       bottom: 5%;
       opacity: 0.75;
+      text-shadow: -1px 1px 0px rgba(0, 0, 0, 0.75),
+                  1px 1px 0px rgba(0, 0, 0, 0.75),
+                  1px -1px 0 rgba(0, 0, 0, 0.75),
+                  -1px -1px 0 rgba(0, 0, 0, 0.75);
     }
   }  
   
