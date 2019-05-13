@@ -28,7 +28,7 @@ class NavigationBar extends Component {
   render() {
     return (
       <Navbar variant="dark" bg="primary" expand="lg" fixed="top" expanded={this.state.expanded} onToggle={() => this.setState({expanded: !this.state.expanded})}>
-        <Navbar.Brand as={Link} to="/" onClick={this.onNavigation}>FormatBuilder</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/" onClick={this.onNavigation}><img alt="" src={process.env.PUBLIC_URL + "/favico.ico"} width="32" height="32" className="d-inline-block align-top mr-1" />FormatBuilder</Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse id="navbarCollapse">
           <Nav>
