@@ -7,6 +7,7 @@ import Button from 'react-bootstrap/Button';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import Pagination from 'react-bootstrap/Pagination';
+import { withHideApp } from './../HideApp';
 
 class FormatEditor extends Component {
    
@@ -55,7 +56,7 @@ class FormatEditor extends Component {
   render() {  
     return (
       <div className="AppContainer">
-        
+        {this.props.children}
         <h1>Format Editor</h1>
         <OmniSearchbar onSearchChange={this.onOmniChange} sortPass={this.props.sortPass} />
         <ButtonGroup className="fullWidth mb-3">
@@ -120,4 +121,4 @@ class FormatEditor extends Component {
   }
 }
 
-export default FormatEditor;
+export default withHideApp(FormatEditor, "Format Editor");

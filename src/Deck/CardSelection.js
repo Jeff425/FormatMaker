@@ -6,6 +6,7 @@ import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import Pagination from 'react-bootstrap/Pagination';
 import { Link } from 'react-router-dom';
+import { withHideApp } from './../HideApp';
 
 class CardSelection extends Component {
    
@@ -28,6 +29,7 @@ class CardSelection extends Component {
   render() {      
     return (
       <div className="AppContainer">
+        {this.props.children}
         <h1>Card Selection</h1>
         <OmniSearchbar onSearchChange={this.onOmniChange} sortPass={this.props.sortPass} />
         <Link to="/deck" className="fullWidth">
@@ -62,7 +64,7 @@ class CardSelection extends Component {
                     <div className="right mr-2">
                       Maximum Copies: {(group.maxCopies === 0 || group.maxCopies === "0") ? "Unlimited" : group.maxCopies}
                     </div>                  
-                  </div>
+                  </div>                  
                   {this.props.tabKey === tabKey && (
                     <div className="centerAlign">
                       {cards && cards.slice((this.state.page - 1) * 60, this.state.page * 60).map(card => 
@@ -82,4 +84,4 @@ class CardSelection extends Component {
   }
 }
 
-export default CardSelection;
+export default withHideApp(CardSelection, "Card Selection");

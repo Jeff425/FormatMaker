@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Button from 'react-bootstrap/Button';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 class CardObj extends Component {
   
@@ -17,7 +17,7 @@ class CardObj extends Component {
     return (
       <div className="cardContainer m-1">
         {this.props.onSelect && (
-          <div className="cardForeground" onClick={event => this.props.onSelect(this.props.card)}><div className="foregroundText">{this.props.subtract ? "+1" : ""}</div></div>
+          <div className="cardForeground" onClick={() => this.props.onSelect(this.props.card)}><div className="foregroundText">{this.props.subtract ? "+1" : ""}</div></div>
         )}        
         <img src={this.props.card.imageUri} 
           alt={this.props.card.name} 
