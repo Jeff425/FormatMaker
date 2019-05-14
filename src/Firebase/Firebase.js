@@ -123,7 +123,7 @@ class Firebase {
     if (authUser) {
       return this.db.collection("formats").where("author", "==", authUser.uid).orderBy("lastUpdate", "desc").get();
     }
-    return this.db.collection("formats").orderBy("lastUpdate", "desc").limit(25).get();
+    return this.db.collection("formats").where("author", "==", "ii4m8G6M6nOtR7PScINVEK7mV6R2").orderBy("lastUpdate", "desc").limit(25).get();
   }
   
   deleteFormat(authUser, formatId, successFunc, errorFunc) {

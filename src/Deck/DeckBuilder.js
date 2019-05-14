@@ -11,7 +11,7 @@ class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}};
+    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, name: "", desc: ""};
     this.sort = this.sort.bind(this);
     //this.loadFormat = this.loadFormat.bind(this);
     this.addCard = this.addCard.bind(this);
@@ -37,7 +37,7 @@ class DeckBuilder extends Component {
         formatIds[card.name] = {groupIndex: i, card: card}
       });
     }
-    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : ""});
+    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc});
     if (this.state.sortingFunc) {
       this.sort(this.state.sortingFunc, format.groups);
     } else {
@@ -233,6 +233,8 @@ class DeckBuilder extends Component {
                 groups={this.state.groups}
                 tabKey={this.state.currentTab}
                 onTabChange={this.onTabChange}
+                formatName={this.state.name}
+                formatDesc={this.state.desc}
               />
             </Col>
             <Col lg>

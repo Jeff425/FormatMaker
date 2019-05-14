@@ -2,17 +2,19 @@ import React, { Component } from 'react';
 import OmniSearchbar from './../OmniSearchbar';
 import CardObj from './../CardObj';
 import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
+import Card from 'react-bootstrap/Card';
 import Pagination from 'react-bootstrap/Pagination';
-import { Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import { withHideApp } from './../HideApp';
 
 class CardSelection extends Component {
    
   constructor(props) {
     super(props);
-    this.state = {cardCheck: () => {return true;}, page: 1};
+    this.state = {cardCheck: () => {return true;}, page: 1, showInfo: false};
     this.onOmniChange = this.onOmniChange.bind(this);
     this.onTabChange = this.onTabChange.bind(this);
   }
@@ -32,9 +34,16 @@ class CardSelection extends Component {
         {this.props.children}
         <h1>Card Selection</h1>
         <OmniSearchbar onSearchChange={this.onOmniChange} sortPass={this.props.sortPass} />
-        <Link to="/deck" className="fullWidth">
-          <Button variant="primary" className="fullWidth">Select Another Format</Button>
-        </Link>
+        <ButtonGroup className="fullWidth">
+          <Button variant="primary" className="flexShare" onClick={() => this.props.history.push("/deck")}>Select Another Format</Button>
+          <Button variant="info" className="flexShare" onClick={() => this.setState({showInfo: !this.state.showInfo})}>Format Information</Button>
+        </ButtonGroup>
+        {this.state.showInfo && (<Card className="fullWidth">
+          <Card.Body>
+            <Card.Title>{this.props.formatName}</Card.Title>
+            <Card.Text>{this.props.formatDesc}</Card.Text>
+          </Card.Body>
+        </Card>)}
         <div className="fullWidth mt-1">
           <Tabs activeKey={this.props.tabKey} onSelect={this.onTabChange}>
             {this.props.groups && this.props.groups.map(group => {
@@ -84,4 +93,4 @@ class CardSelection extends Component {
   }
 }
 
-export default withHideApp(CardSelection, "Card Selection");
+export default withHideApp(withRouter(CardSelection), "Card Selection");

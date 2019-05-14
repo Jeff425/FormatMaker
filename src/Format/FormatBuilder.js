@@ -315,7 +315,7 @@ class FormatBuilderBase extends Component {
         {this.state.didSucceed && <Row>
           <Alert dismissible variant="success" className="fullWidth ml-3 mr-3" onClose={() => this.setState({didSucceed: false})}>
             <Alert.Heading>Success!</Alert.Heading>
-            <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={ROUTES.format + "/" + this.props.match.params.formatId}>directly</Link> or you may create decks for your format <Link to={ROUTES.deck + "/" + this.props.match.params.formatId}>here.</Link></p>
+            <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={ROUTES.format + "/" + this.props.match.params.formatId}>directly</Link> or you may create decks for your format <Link to={ROUTES.deck + "/" + this.props.match.params.formatId}>here.</Link> (Copy that link and send it to your friends!)</p>
           </Alert>      
         </Row>}
         <Row>
