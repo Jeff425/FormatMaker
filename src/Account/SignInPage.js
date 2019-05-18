@@ -37,7 +37,7 @@ class SignInPageBase extends Component {
     return (
       <div className="main-page">
         <div className="singleApp">
-          <h1>Sign in to FormatMaker</h1>
+          <h1>Sign in to FormatBuilder</h1>
           <SignInForm firebase={this.props.firebase} />
           <p className="mt-3">Don't have an account? <Link to={ROUTES.signup}>Sign Up Here</Link></p>
           <p className="mt-3"><Link to={ROUTES.passwordforget}>Forgot Password?</Link></p>

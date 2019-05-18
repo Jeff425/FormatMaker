@@ -131,6 +131,10 @@ footer {
   width: 100%;
 }
 
+.textAreaModal {
+  resize: none;
+}
+
 .topTab {
   display: flex;
   
@@ -154,7 +158,7 @@ footer {
 }
 
 .singleApp {
-  max-width: 500px;
+  max-width: 525px;
   width: 90%;
 }
 

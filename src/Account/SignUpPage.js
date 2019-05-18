@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 import { withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
+import { privacyTitle, privacyBody } from './PrivacyPolicy';
+import { termsTitle, termsBody } from './TermsOfService';
 
 class SignUpPageBase extends Component {
   
@@ -37,7 +40,7 @@ class SignUpPageBase extends Component {
     return (
       <div className="main-page">
         <div className="singleApp">
-          <h1>Sign up to FormatMaker</h1>
+          <h1>Sign up to FormatBuilder</h1>
             <SignUpForm firebase={this.props.firebase} />
         </div>
       </div>
@@ -49,9 +52,11 @@ class SignUpForm extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {email: "", pwd: "", pwd2: "", validated: false, mismatch: false, feedback: "", sending: false};
+    this.state = {email: "", pwd: "", pwd2: "", validated: false, mismatch: false, feedback: "", sending: false, showModal: false, modalTitle: "", modalBody: ""};
     this.onFormChange = this.onFormChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.showPrivacyModal = this.showPrivacyModal.bind(this);
+    this.showTermsModal = this.showTermsModal.bind(this);
   }
   
   onFormChange(event, control) {
@@ -93,6 +98,14 @@ class SignUpForm extends Component {
     this.setState({validated: true});
   }
   
+  showPrivacyModal() {
+    this.setState({modalTitle: privacyTitle, modalBody: privacyBody, showModal: true});
+  }
+  
+  showTermsModal() {
+    this.setState({modalTitle: termsTitle, modalBody: termsBody, showModal: true});
+  }
+  
   render() {
     return (
       <Form noValidate onSubmit={this.handleSubmit} validated={this.state.validated}>
@@ -111,8 +124,26 @@ class SignUpForm extends Component {
           <Form.Control required type="password" value={this.state.pwd2} onChange={event => this.onFormChange(event, "pwd2")} placeholder="Enter password again" ref="pwd2" />
           <Form.Control.Feedback type="invalid">{this.state.mismatch ? "Please enter the same password" : "Please enter a password"}</Form.Control.Feedback>
         </Form.Group>
+        <Form.Group>
+          <Form.Check required type="checkbox" label="By checking this box you agree to our Terms of Service and Privacy Policy" />
+          <div className="mt-1">
+            Read our <Button variant="link" className="border-0 p-0 align-baseline" onClick={this.showTermsModal}>Terms of Service</Button> and <Button variant="link" className="border-0 p-0 align-baseline" onClick={this.showPrivacyModal}>Privacy Policy</Button>
+          </div>
+        </Form.Group>
         {this.state.feedback && <p>{this.state.feedback}</p>}
-        <Button variant="primary" type="submit" disabled={this.state.sending}>Create Account</Button>     
+        <Button variant="primary" type="submit" disabled={this.state.sending}>Create Account</Button>
+        
+        <Modal show={this.state.showModal} onHide={() => this.setState({showModal: false})} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>{this.state.modalTitle}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body><Form.Control as="textarea" rows="20" className="textAreaModal">{this.state.modalBody}</Form.Control></Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => this.setState({showModal: false})}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Form>
     );
   }

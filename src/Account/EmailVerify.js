@@ -60,7 +60,7 @@ class EmailVerify extends Component {
     }
     return (
       <div className="main-page">
-        <h5>{"Sent email verification to " + this.state.email}</h5>
+        <h5>{"Sent email verification to " + this.state.email + ", please log in once you have verified your email"}</h5>
       </div>
     );
   }
