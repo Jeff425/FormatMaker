@@ -43,7 +43,7 @@ class NavigationBar extends Component {
             {this.props.authUser &&
                 <Button variant="link" className="nav-link border-0" onClick={this.onSignOut}>Sign Out</Button>        
             }
-            {!this.props.authUser && <Nav.Link as={NavLink} to={ROUTES.signin}>Sign In</Nav.Link>}
+            {!this.props.authUser && <Nav.Link as={NavLink} to={ROUTES.signin} onClick={this.onNavigation}>Sign In</Nav.Link>}
           </Nav>
         </Navbar.Collapse>
       </Navbar>
