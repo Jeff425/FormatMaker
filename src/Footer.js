@@ -16,6 +16,7 @@ class Footer extends Component {
           <ul className="text-secondary mt-2 copyright">
             <li>The literal and graphical information presented on this site about Magic: The Gathering, including card images, the mana symbols, and Oracle text, is copyright Wizards of the Coast, LLC, a subsidiary of Hasbro, Inc. This website is not produced by, endorsed by, supported by, or affiliated with Wizards of the Coast.</li>
             <li>The Scryfall name is copyright of Scryfall, LLC. FormatMaker is not produced, supported, or endorsed by this service.</li>
+            <li>Card prices are estimates and absolutely no guarantee is made for any price information. See stores for final prices.</li>
             <li>All other content © KhalorlStudios, LLC.</li>
           </ul>
         </Container>
