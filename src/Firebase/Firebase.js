@@ -27,6 +27,7 @@ class Firebase {
     this.readFormat = this.readFormat.bind(this);
     this.queryFormats = this.queryFormats.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
+    this.cleanUpDB = this.cleanUpDB.bind(this);
   }
   
   createUser(email, password) {
@@ -73,6 +74,9 @@ class Firebase {
           })
           .catch(error => {
             errorFunc("Failed to upload format: " + error.code);
+            if (!firebaseId) { // This was the initial upload, meaning the format will not be found
+              this.cleanUpDB(docRef.id, successFunc, errorFunc);
+            }
           });
       })
       .catch(error => {
@@ -126,19 +130,21 @@ class Firebase {
     return this.db.collection("formats").where("author", "==", "ii4m8G6M6nOtR7PScINVEK7mV6R2").orderBy("lastUpdate", "desc").limit(25).get();
   }
   
-  deleteFormat(authUser, formatId, successFunc, errorFunc) {
+  deleteFormat(authUser, formatId, successFunc, errorFunc) {  
     this.storage.ref().child("format/" + authUser.uid + "/" + formatId + ".format").delete()
+    .then(() => this.cleanUpDB(formatId, successFunc, errorFunc))
+    .catch(error => {
+      this.cleanUpDB(formatId, successFunc, errorFunc);
+    });
+  }
+  
+  cleanUpDB(formatId, successFunc, errorFunc) {
+    this.db.collection("formats").doc(formatId).delete()
     .then(() => {
-      this.db.collection("formats").doc(formatId).delete()
-      .then(() => {
-        successFunc();
-      })
-      .catch(error => {
-        errorFunc("Error deleting format from database: " + error.code);
-      });
+      successFunc();
     })
     .catch(error => {
-      errorFunc("Error deleting format from storage: " + error.code);
+      errorFunc("Error deleting format from database: " + error.code);
     });
   }
 }
