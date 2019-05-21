@@ -10,7 +10,7 @@ class Footer extends Component {
           <ul className="d-inline-block mx-auto">
             <li><Button variant="link" onClick={() => window.scrollTo(0, 0)}>Back to top</Button></li>
             <li><a href="https://www.paypal.me/khalorlstudiosllc" target="_blank" rel="noopener noreferrer">Support FormatMaker</a></li>
-            <li><a href="mailto:khalorlstudios@gmail.com?subject=FormatMaker Question" target="_blank" rel="noopener noreferrer">Contact KhalorlStudios</a></li>
+            <li><a href="mailto:contact@khalorlstudios.com?subject=FormatBuilder Question" target="_blank" rel="noopener noreferrer">Contact KhalorlStudios</a></li>
             <li><a href="http://khalorlstudios.com/" target="_blank" rel="noopener noreferrer">Visit KhalorlStudios</a></li>          
           </ul>
           <ul className="text-secondary mt-2 copyright">
