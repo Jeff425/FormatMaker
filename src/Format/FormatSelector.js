@@ -8,7 +8,7 @@ class FormatSelector extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {isLoading: true, formats: []};
+    this.state = {isLoading: true, formats: [], isAuthed: false};
   }
   
   componentDidMount() {
@@ -21,6 +21,13 @@ class FormatSelector extends Component {
         return format;
       });
       this.setState({isLoading: false, formats: formats});
+    });
+    this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
+      if (auth) {
+        if (auth.emailVerified) {
+          this.setState({isAuthed: true});
+        }
+      }
     });
   }
   
@@ -35,6 +42,7 @@ class FormatSelector extends Component {
     return (
       <div className="AppContainer fullWidth">
         <h1>Select a format</h1>
+        {this.state.isAuthed && <h4>You may view your own formats <Link to={ROUTES.ownformat}>here</Link></h4>}
         <div className="d-flex flex-row flex-wrap">
         {this.state.formats.map(format => (
           <Card key={format.id} className="formatCard ml-3 mr-3 mt-3">

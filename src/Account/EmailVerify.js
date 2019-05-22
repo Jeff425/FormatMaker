@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
 
@@ -47,7 +47,7 @@ class EmailVerify extends Component {
     if (this.state.emailVerified) {
       return (
         <div className="main-page">
-          <h5>Email has been verified</h5>
+          <h5>Email has been verified. You may now create your own format <Link to={ROUTES.format}>here</Link></h5>
         </div>
       );
     }
@@ -60,7 +60,7 @@ class EmailVerify extends Component {
     }
     return (
       <div className="main-page">
-        <h5>{"Sent email verification to " + this.state.email + ", please log in once you have verified your email"}</h5>
+        <h5>{"Sent email verification to " + this.state.email + ", once verified you may create a format "}<Link to={ROUTES.format}>here</Link>.</h5>
       </div>
     );
   }
