@@ -10,7 +10,11 @@ class CardObj extends Component {
   }
   
   viewCard() {
-    window.open(this.props.card.gathererLink, "_blank");
+    if (this.props.card.gathererLink.startsWith("http://gatherer.wizards.com") || this.props.card.gathererLink.startsWith("https://gatherer.wizards.com")) {
+      window.open(this.props.card.gathererLink, "_blank");
+    } else {
+      console.log("Invalid info link, potentially dangerous: " + this.props.card.gathererLink);
+    }
   }
   
   render() {
