@@ -1,0 +1,8 @@
+User-Agent: *
+Disallow: /manifest.json
+Disallow: /asset-manifest.json
+Disallow: /favicon.ico
+Disallow: /loader.gif
+Disallow: /service-worker.js
+Disallow: /precache-manifest*
+Disallow: /static/*
