@@ -11,9 +11,8 @@ class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, name: "", desc: ""};
+    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0};
     this.sort = this.sort.bind(this);
-    //this.loadFormat = this.loadFormat.bind(this);
     this.addCard = this.addCard.bind(this);
     this.removeCard = this.removeCard.bind(this);
     this.saveDeck = this.saveDeck.bind(this);
@@ -37,7 +36,12 @@ class DeckBuilder extends Component {
         formatIds[card.name] = {groupIndex: i, card: card}
       });
     }
-    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc});
+    format.deckMin = format.deckMin ? format.deckMin : 0;
+    format.deckMax = format.deckMax ? format.deckMax : 0;
+    format.sideMin = format.sideMin ? format.sideMin : 0;
+    format.sideMax = format.sideMax ? format.sideMax : 0;
+    const sideboardAllowed = format.sideboardAllowed || format.sideboardAllowed !== false;
+    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc, deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
     if (this.state.sortingFunc) {
       this.sort(this.state.sortingFunc, format.groups);
     } else {
@@ -61,31 +65,6 @@ class DeckBuilder extends Component {
     });
     this.setState({sortingFunc: sortingFunc, groups: groups});
   }
-  
-  /*
-  loadFormat(e) {
-    if(!e.target.files[0]) {
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      const formatIds = {};
-      const format = JSON.parse(reader.result);
-      for (let i = 0; i < format.groups.length; i++) {
-        format.groups[i].cards.forEach(card => {
-          formatIds[card.name] = {groupIndex: i, card: card}
-        });
-      }
-      this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : ""});
-      if (this.state.sortingFunc) {
-        this.sort(this.state.sortingFunc, format.groups);
-      } else {
-        this.setState({groups: format.groups});
-      }
-    };
-    reader.readAsText(e.target.files[0]);
-  }
-  */
   
   addCard(card, sideboard = false) {
     const deckSelection = sideboard ? this.state.sideSelection : this.state.deckSelection;
@@ -153,11 +132,6 @@ class DeckBuilder extends Component {
     const saveString = this.deckString();
     const blob = new Blob([saveString], {type: "plain/text"});
     saveAs(blob, "customDeck" + Date.now() + ".deck");
-    /*
-    const deck = {selection: this.state.deckSelection, amount: this.state.deckAmount};
-    const blob = new Blob([JSON.stringify(deck, null, 2)], {type: "application/json"});
-    saveAs(blob, "customDeck" + Date.now() + ".deck");
-    */
   }
   
   loadDeck(e) {
@@ -194,10 +168,6 @@ class DeckBuilder extends Component {
         }
       });
       this.setState({deckSelection: selection, deckAmount: amount, sideSelection: sideSelection, sideAmount: sideAmount});
-      /*
-      const deck = JSON.parse(reader.result);
-      this.setState({deckSelection: deck.selection, deckAmount: deck.amount});
-      */
     };
     reader.readAsText(e.target.files[0]);
   }
@@ -235,6 +205,7 @@ class DeckBuilder extends Component {
                 onTabChange={this.onTabChange}
                 formatName={this.state.name}
                 formatDesc={this.state.desc}
+                sideboardAllowed={this.state.sideboardAllowed}
               />
             </Col>
             <Col lg>
@@ -250,6 +221,11 @@ class DeckBuilder extends Component {
                 groups={this.state.groups}
                 formatIds={this.state.formatIds}
                 onPurchase={this.purchaseDeck}
+                deckMin={this.state.deckMin}
+                deckMax={this.state.deckMax}
+                sideboardAllowed={this.state.sideboardAllowed}
+                sideMin={this.state.sideMin}
+                sideMax={this.state.sideMax}
               />
             </Col>
           </Row>
@@ -261,18 +237,6 @@ class DeckBuilder extends Component {
         <img className="mt-4" src={process.env.PUBLIC_URL + "/loader.gif"} alt="loading" />
       </div>
     );
-    /*
-    return (
-      <div className="main-page">
-        <input type="file" ref="formatLoader" className="hidden" onChange={this.loadFormat} accept=".format" />
-        <h1>Build a deck for a custom format</h1>
-        <h4>To get started, please load a custom format file</h4>
-        <div className="initialLoadFormat">
-          <Button variant="primary" onClick={() => this.refs.formatLoader.click()}>Load Format</Button>
-        </div>
-      </div>
-    );
-    */
   }
 }
 

@@ -77,7 +77,7 @@ class CardSelection extends Component {
                   {this.props.tabKey === tabKey && (
                     <div className="centerAlign">
                       {cards && cards.slice((this.state.page - 1) * 60, this.state.page * 60).map(card => 
-                        <CardObj card={card} key={card.id} onSelect={this.props.addCard} onSide={card => this.props.addCard(card, true)} />
+                        <CardObj card={card} key={card.id} onSelect={this.props.addCard} onSide={this.props.sideboardAllowed ? card => this.props.addCard(card, true) : null} />
                       )}
                     </div>)}
                   <div className="d-flex justify-content-center mt-2">

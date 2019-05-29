@@ -114,6 +114,21 @@ class DeckManager extends Component {
     const instantSorceryCount = this.typeCount("instant") + this.typeCount("sorcery");
     const otherCount = deckCount - landCount - creatureCount - instantSorceryCount;
     notLegal = notLegal || banned.length > 0 || warningCopies.length > 0;
+    
+    let deckSizeError = "";
+    if (this.props.deckMin > 0 && deckCount < this.props.deckMin) {
+      deckSizeError = " (" + this.props.deckMin + " minimum)";
+    } else if (this.props.deckMax > 0 && deckCount > this.props.deckMax) {
+      deckSizeError = " (" + this.props.deckMax + " maximum)";
+    }
+    
+    let sideboardError = "";
+    if (this.props.sideMin > 0 && sideCount < this.props.sideMin) {
+      sideboardError = " " + this.props.sideMin + " minimum";
+    } else if (this.props.sideMax > 0 && sideCount > this.props.sideMax) {
+      sideboardError = " " + this.props.sideMax + " maximum";
+    }
+    
     if (this.props.deck && (this.props.deck.length > 0 || this.props.side.length > 0)) {
       return (
         <div className="AppContainer">
@@ -127,7 +142,7 @@ class DeckManager extends Component {
           <Button variant="secondary" className="fullWidth" onClick={this.props.onPurchase}>Purchase on TCGPlayer</Button>
           <Container fluid className="bottomExtension">
             <Row>
-              <Col>{"Total Cards: " + deckCount}</Col>
+              <Col className={deckSizeError ? "text-danger" : ""}>{"Total Cards: " + deckCount + deckSizeError}</Col>
               <Col>{"Lands: " + landCount}</Col>
               <Col>{"Non-Lands: " + (deckCount - landCount)}</Col>
             </Row>
@@ -139,10 +154,10 @@ class DeckManager extends Component {
           </Container>
           <div className="centerAlign">
             {this.props.deck && this.props.deck.map(card => {
-              return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={card => {this.props.decrementCard(card); this.props.incrementCard(card, true)}} subtract={true} />;
+              return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} />;
             })}
           </div>
-          <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount + ")"} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
+          <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount +  ")" + sideboardError} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
           <div ref={ref => this.deckSelectionRef = ref} />
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Banned (Please remove all cards)" cards={banned} subtract={true} />
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Too many copies (Please lower card counts)" cards={warningCopies} subtract={true} />

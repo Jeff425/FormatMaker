@@ -4,7 +4,9 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import FormGroup from 'react-bootstrap/FormGroup';
 import FormLabel from 'react-bootstrap/FormLabel';
+import { Row as FormRow } from 'react-bootstrap/Form';
 import FormControl from 'react-bootstrap/FormControl';
+import FormCheck from 'react-bootstrap/FormCheck';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import { Link, withRouter } from 'react-router-dom';
@@ -17,7 +19,7 @@ class FormatBuilderBase extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {name: "", desc: "", showInfo: false, isLoading: true, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, groups: [
+    this.state = {name: "", desc: "", showInfo: false, isLoading: true, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, deckMin: 60, deckMax: 0, sideboardAllowed: true, sideMin: 0, sideMax: 15, groups: [
       {
         "groupName": "Legal Cards",
         "maxTotal": 0,
@@ -111,6 +113,8 @@ class FormatBuilderBase extends Component {
     this.readFormat = this.readFormat.bind(this);
     this.successRead = this.successRead.bind(this);
     this.errorRead = this.errorRead.bind(this);
+    this.changeDeckMin = this.changeDeckMin.bind(this);
+    this.changeDeckMax = this.changeDeckMax.bind(this);
   }
   
   componentDidMount() {
@@ -210,7 +214,7 @@ class FormatBuilderBase extends Component {
   
   saveFormat() {
     if (this.state.name !== "" && this.state.desc !== "") {
-      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, JSON.stringify({groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
+      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, JSON.stringify({deckMin: this.state.deckMin, deckMax: this.state.deckMax, sideboardAllowed: this.state.sideboardAllowed, sideMin: this.state.sideMin, sideMax: this.state.sideMax, groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
       this.setState({isLoading: true});
     } else {
       this.setState({showInfo: true});
@@ -240,7 +244,12 @@ class FormatBuilderBase extends Component {
         formatIds.add(card.name);
       });
     });
-    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "addGroup"});
+    format.deckMin = format.deckMin ? format.deckMin : 0;
+    format.deckMax = format.deckMax ? format.deckMax : 0;
+    format.sideMin = format.sideMin ? format.sideMin : 0;
+    format.sideMax = format.sideMax ? format.sideMax : 0;
+    const sideboardAllowed = format.sideboardAllowed || format.sideboardAllowed !== false;
+    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "addGroup", deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
     if (this.state.sortingFunc) {
       this.sort(this.state.sortingFunc, format.groups);
     } else {
@@ -274,6 +283,42 @@ class FormatBuilderBase extends Component {
     this.setState({currentTab: key});
   }
   
+  changeDeckMin(event, sideboard = false) {
+    const nextValue = parseInt(event.target.value);
+    const min = sideboard ? "sideMin" : "deckMin";
+    const max = sideboard ? "sideMax" : "deckMax";
+    if (isNaN(nextValue)) {
+      this.setState({[min]: "0"});
+      return;
+    } else if (nextValue < 0) {
+      this.setState({[min]: Math.abs(nextValue)});
+      return;
+    }
+    let newMax = parseInt(this.state[max]);
+    if (newMax > 0 && newMax < nextValue) {
+      newMax = nextValue;
+    }
+    this.setState({[min]: nextValue, [max]: newMax});
+  }
+  
+  changeDeckMax(event, sideboard = false) {
+    const nextValue = parseInt(event.target.value);
+    const min = sideboard ? "sideMin" : "deckMin";
+    const max = sideboard ? "sideMax" : "deckMax";
+    if (isNaN(nextValue)) {
+      this.setState({[max]: "0"});
+      return;
+    } else if (nextValue < 0) {
+      this.setState({[max]: Math.abs(nextValue)});
+      return;
+    }
+    let newMin = parseInt(this.state[min]);
+    if (nextValue > 0 && nextValue < newMin) {
+      newMin = nextValue;
+    }
+    this.setState({[max]: nextValue, [min]: newMin});
+  }
+  
   render() {
     if (this.state.isLoading) {
       return (
@@ -296,6 +341,31 @@ class FormatBuilderBase extends Component {
               <FormLabel>Format Description</FormLabel>
               <FormControl as="textarea" rows="5" value={this.state.desc} onChange={event => this.editControl(event, "desc")} maxLength={250} />
             </FormGroup>
+            <FormRow>
+              <FormGroup as={Col}>
+                <FormLabel>Deck Size Minimum</FormLabel>
+                <FormControl required type="number" min="0" value={this.state.deckMin} onChange={this.changeDeckMin} />
+              </FormGroup>
+              <FormGroup as={Col}>
+                <FormLabel>Deck Size Maximum</FormLabel>
+                <FormControl required type="number" min="0" value={this.state.deckMax} onChange={this.changeDeckMax} />
+              </FormGroup>
+            </FormRow>
+            <FormGroup>
+              <FormCheck type="checkbox" label="Allow Sideboard?" checked={this.state.sideboardAllowed} onChange={event => this.setState({sideboardAllowed: event.target.checked})} />
+            </FormGroup>
+            {this.state.sideboardAllowed && (
+              <FormRow>
+                <FormGroup as={Col}>
+                  <FormLabel>Sideboard Minimum</FormLabel>
+                  <FormControl required type="number" min="0" value={this.state.sideMin} onChange={event => this.changeDeckMin(event, true)} />
+                </FormGroup>
+                <FormGroup as={Col}>
+                  <FormLabel>Sideboard Maximum</FormLabel>
+                  <FormControl required type="number" min="0" value={this.state.sideMax} onChange={event => this.changeDeckMax(event, true)} />
+                </FormGroup>
+              </FormRow>
+            )}
             <div className="d-flex flex-row">
               <Button variant="primary" size="lg" onClick={() => this.setState({showInfo: false})}>Back</Button>
               <Button variant="primary" size="lg" className="flex-grow-1 ml-3" onClick={this.saveFormat}>Submit</Button>

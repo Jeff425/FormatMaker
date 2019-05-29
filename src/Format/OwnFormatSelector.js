@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import Card from 'react-bootstrap/Card';
 import { Link } from 'react-router-dom';
-import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
+import FormatCard from './FormatCard';
 
 class OwnFormatSelector extends Component {
   
@@ -90,17 +88,7 @@ class OwnFormatSelector extends Component {
         </Alert>}
         <div className="d-flex flex-row flex-wrap">
         {this.state.formats.map(format => (
-          <Card key={format.id} className="formatCard ml-3 mr-3 mt-3">
-            <Card.Body className="d-flex flex-column">
-              <Card.Title>{format.name}</Card.Title>
-              <Card.Text>{format.description}</Card.Text>
-              <div className="d-flex justify-content-between mt-auto align-items-center">
-                <Card.Link as={Link} to={ROUTES.format + "/" + format.id}>Edit Format</Card.Link>
-                <Card.Link as={Link} to={ROUTES.deck + "/" + format.id}>Make Deck</Card.Link>
-                <Button variant="danger" className="ml-4" onClick={event => this.removeFormat(format.id)}><FontAwesomeIcon icon="times" className="fa-w-16" /></Button>
-              </div>
-            </Card.Body> 
-          </Card>
+          <FormatCard format={format} removeFormat={this.removeFormat} />
         ))}
         </div>
       </div>
