@@ -147,6 +147,10 @@ class Firebase {
       errorFunc("Error deleting format from database: " + error.code);
     });
   }
+  
+  queryChangelog() {
+    return this.db.collection("changelog").orderBy("date", "desc").get();
+  }
 }
 
 export default Firebase;

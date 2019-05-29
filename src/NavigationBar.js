@@ -35,6 +35,7 @@ class NavigationBar extends Component {
             <Nav.Link as={NavLink} to={ROUTES.format} onClick={this.onNavigation}>Create Format</Nav.Link>
             <Nav.Link as={NavLink} to={ROUTES.deck} onClick={this.onNavigation}>Build Deck</Nav.Link>
             <Nav.Link as={NavLink} to={ROUTES.howto} onClick={this.onNavigation}>How To Use</Nav.Link>
+            <Nav.Link as={NavLink} to={ROUTES.changelog} onClick={this.onNavigation}>Changelog</Nav.Link>
           </Nav>
           <Nav className="ml-auto">
             {this.props.authUser &&

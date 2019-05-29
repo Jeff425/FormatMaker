@@ -7,7 +7,8 @@ const ROUTES = {
   howto: "/howto",
   passwordforget: "/passwordforget",
   passwordchange: "/passwordchange",
-  emailverify: "/emailverify"
+  emailverify: "/emailverify",
+  changelog: "/changelog"
 };
 
 export default ROUTES;
