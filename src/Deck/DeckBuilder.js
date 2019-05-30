@@ -205,7 +205,11 @@ class DeckBuilder extends Component {
                 onTabChange={this.onTabChange}
                 formatName={this.state.name}
                 formatDesc={this.state.desc}
+                deckMin={this.state.deckMin}
+                deckMax={this.state.deckMax}
                 sideboardAllowed={this.state.sideboardAllowed}
+                sideMin={this.state.sideMin}
+                sideMax={this.state.sideMax}
               />
             </Col>
             <Col lg>

@@ -41,7 +41,21 @@ class CardSelection extends Component {
         {this.state.showInfo && (<Card className="fullWidth">
           <Card.Body>
             <Card.Title>{this.props.formatName}</Card.Title>
-            <Card.Text>{this.props.formatDesc}</Card.Text>
+            <Card.Text>
+              <p>{this.props.formatDesc}</p>
+              {(this.props.deckMin > 0 || this.props.deckMax > 0 || this.props.sideboardAllowed) && <hr />}
+              {(this.props.deckMin > 0 || this.props.deckMax > 0) && (
+                <div className="d-flex">
+                  {this.props.deckMin > 0 && <div className="mr-auto">{"Deck minimum: " + this.props.deckMin}</div>}
+                  {this.props.deckMax > 0 && <div>{"Deck maximum: " + this.props.deckMax}</div>}
+                </div>)}
+              {this.props.sideboardAllowed && <div className="mt-2 font-weight-bold">Sideboard Allowed</div>}
+              {this.props.sideboardAllowed && (this.props.sideMin > 0 || this.props.sideMax > 0) && (
+                <div className="d-flex">
+                  {this.props.sideMin > 0 && <div className="mr-auto">{"Side minimum: " + this.props.sideMin}</div>}
+                  {this.props.sideMax > 0 && <div>{"Side maximum: " + this.props.sideMax}</div>}
+                </div>)}
+            </Card.Text>
           </Card.Body>
         </Card>)}
         <div className="fullWidth mt-1">
