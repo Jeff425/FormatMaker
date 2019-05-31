@@ -29,9 +29,9 @@ class FormatEditor extends Component {
     this.setState({showEdit: !this.state.showEdit});
   }
   
-  onSubmitGroupHide(groupName, maxTotal, maxCopies) {
+  onSubmitGroupHide(groupName, maxTotal, maxCopies, usePointSystem, maxPoints) {
     this.onEdit();
-    this.props.onSubmitGroup(groupName, maxTotal, maxCopies);
+    this.props.onSubmitGroup(groupName, maxTotal, maxCopies, usePointSystem, maxPoints);
   }
   
   checkGroupName(name) {
@@ -84,17 +84,20 @@ class FormatEditor extends Component {
               return (
                 <Tab eventKey={tabKey} title={group.groupName} key={tabKey}>
                   {this.state.showEdit && (
-                    <GroupEditor onSubmitGroup={this.onSubmitGroupHide} onDeleteGroup={this.props.onDeleteGroup} groupName={group.groupName} maxTotal={group.maxTotal} maxCopies={group.maxCopies} />
+                    <GroupEditor onSubmitGroup={this.onSubmitGroupHide} onDeleteGroup={this.props.onDeleteGroup} groupName={group.groupName} maxTotal={group.maxTotal} maxCopies={group.maxCopies} usePointSystem={group.usePointSystem} maxPoints={group.maxPoints} />
                   )}
                   {!this.state.showEdit && (
-                    <div className="bottomExtension topTab">
-                      <div>
-                        Maximum Total: {(group.maxTotal === 0 || group.maxTotal === "0") ? "Unlimited" : group.maxTotal}
+                    <div className="bottomExtension">
+                      <div className="topTab">
+                        <div>
+                          Maximum Total: {(group.maxTotal === 0 || group.maxTotal === "0") ? "Unlimited" : group.maxTotal}
+                        </div>
+                        <div className="right mr-2">
+                          Maximum Copies: {(group.maxCopies === 0 || group.maxCopies === "0") ? "Unlimited" : group.maxCopies}
+                        </div>                  
+                        <Button variant="primary" onClick={this.onEdit}>Edit</Button>
                       </div>
-                      <div className="right mr-2">
-                        Maximum Copies: {(group.maxCopies === 0 || group.maxCopies === "0") ? "Unlimited" : group.maxCopies}
-                      </div>                  
-                      <Button variant="primary" onClick={this.onEdit}>Edit</Button>
+                      {group.usePointSystem && <div>Maximum Points: {group.maxPoints}</div>}
                     </div>
                   )}
                   {this.props.tabKey === tabKey && (

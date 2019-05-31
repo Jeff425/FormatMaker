@@ -80,13 +80,16 @@ class CardSelection extends Component {
               }
               return (
                 <Tab eventKey={tabKey} title={group.groupName} key={tabKey}>                  
-                  <div className="bottomExtension topTab">
-                    <div>
-                      Maximum Total: {(group.maxTotal === 0 || group.maxTotal === "0") ? "Unlimited" : group.maxTotal}
+                  <div className="bottomExtension">
+                    <div className="topTab">
+                      <div>
+                        Maximum Total: {(group.maxTotal === 0 || group.maxTotal === "0") ? "Unlimited" : group.maxTotal}
+                      </div>
+                      <div className="right mr-2">
+                        Maximum Copies: {(group.maxCopies === 0 || group.maxCopies === "0") ? "Unlimited" : group.maxCopies}
+                      </div>     
                     </div>
-                    <div className="right mr-2">
-                      Maximum Copies: {(group.maxCopies === 0 || group.maxCopies === "0") ? "Unlimited" : group.maxCopies}
-                    </div>                  
+                    {group.usePointSystem && <div>Maximum Points: {group.maxPoints}</div>}
                   </div>                  
                   {this.props.tabKey === tabKey && (
                     <div className="centerAlign">

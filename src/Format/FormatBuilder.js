@@ -24,7 +24,7 @@ class FormatBuilderBase extends Component {
         "groupName": "Legal Cards",
         "maxTotal": 0,
         "maxCopies": 4,
-        "cards": []
+        "cards": [],
       },
       {
         "groupName": "Unlimited",
@@ -262,11 +262,11 @@ class FormatBuilderBase extends Component {
     this.setState({error: errorMessage, isLoading: false});
   }
   
-  onGroupSubmit(groupName, maxTotal, maxCopies) {
+  onGroupSubmit(groupName, maxTotal, maxCopies, usePointSystem, maxPoints) {
     for (let i = 0; i < this.state.groups.length; i++) {
       if (this.state.groups[i].groupName === groupName) {
         const newGroups = [...this.state.groups];
-        newGroups[i] = {groupName: groupName, maxTotal: maxTotal, maxCopies: maxCopies, cards: []};
+        newGroups[i] = {groupName: groupName, maxTotal: maxTotal, maxCopies: maxCopies, usePointSystem: usePointSystem, maxPoints: maxPoints, cards: newGroups[i].cards};
         this.setState({groups: newGroups});
         return;
       }
@@ -347,7 +347,7 @@ class FormatBuilderBase extends Component {
                 <FormControl required type="number" min="0" value={this.state.deckMin} onChange={this.changeDeckMin} />
               </FormGroup>
               <FormGroup as={Col}>
-                <FormLabel>Deck Size Maximum</FormLabel>
+                <FormLabel>Deck Size Maximum <span className="text-muted">(0 for unlimited)</span></FormLabel>
                 <FormControl required type="number" min="0" value={this.state.deckMax} onChange={this.changeDeckMax} />
               </FormGroup>
             </FormRow>
@@ -361,7 +361,7 @@ class FormatBuilderBase extends Component {
                   <FormControl required type="number" min="0" value={this.state.sideMin} onChange={event => this.changeDeckMin(event, true)} />
                 </FormGroup>
                 <FormGroup as={Col}>
-                  <FormLabel>Sideboard Maximum</FormLabel>
+                  <FormLabel>Sideboard Maximum <span className="text-muted">(0 for unlimited)</span></FormLabel>
                   <FormControl required type="number" min="0" value={this.state.sideMax} onChange={event => this.changeDeckMax(event, true)} />
                 </FormGroup>
               </FormRow>

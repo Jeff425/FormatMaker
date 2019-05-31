@@ -8,7 +8,7 @@ class GroupEditor extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {groupName: (props.groupName ? props.groupName : ""), maxTotal: (props.maxTotal ? props.maxTotal : 0), maxCopies: (props.maxCopies ? props.maxCopies : 4), validated: false};
+    this.state = {groupName: (props.groupName ? props.groupName : ""), maxTotal: (props.maxTotal ? props.maxTotal : 0), maxCopies: (props.maxCopies ? props.maxCopies : 4), validated: false, usePointSystem: !!props.usePointSystem, maxPoints: (props.maxPoints ? props.maxPoints : 1)};
     this.handleChange = this.handleChange.bind(this);
     this.submitGroup = this.submitGroup.bind(this);
     this.deleteGroup = this.deleteGroup.bind(this);
@@ -33,10 +33,10 @@ class GroupEditor extends Component {
       this.setState({validated: true});
       return;
     }
-    this.props.onSubmitGroup(this.state.groupName, this.state.maxTotal, this.state.maxCopies);
+    this.props.onSubmitGroup(this.state.groupName, this.state.maxTotal, this.state.maxCopies, this.state.usePointSystem, this.state.maxPoints);
     this.setState({validated: false});
     if (!this.props.groupName) {
-      this.setState({groupName: "", maxTotal: 0, maxCopies: 4});
+      this.setState({groupName: "", maxTotal: 0, maxCopies: 4, usePointSystem: false, maxPoints: 1});
     }
   }
   
@@ -57,14 +57,21 @@ class GroupEditor extends Component {
         </Form.Group>
         <Form.Row>
           <Form.Group as={Col}>
-            <Form.Label className="mb-0">Maximum number of cards allowed in this group <p className="text-muted">(0 for unlimited)</p></Form.Label>
+            <Form.Label>Maximum number of cards allowed in this group <div className="text-muted">(0 for unlimited)</div></Form.Label>
             <Form.Control required type="number" min="0" value={this.state.maxTotal} onChange={event => this.handleChange(event, "maxTotal")} />
           </Form.Group>
           <Form.Group as={Col}>
-            <Form.Label className="mb-0">Maximum copies of each card <p className="text-muted">(0 for unlimited)</p></Form.Label>
+            <Form.Label>Maximum copies of each card <div className="text-muted">(0 for unlimited)</div></Form.Label>
             <Form.Control required type="number" min="0" value={this.state.maxCopies} onChange={event => this.handleChange(event, "maxCopies")} />
           </Form.Group>
         </Form.Row>
+        <Form.Group className="mt-1">
+          <Form.Check type="checkbox" label="Use Point System" checked={this.state.usePointSystem} onChange={event => this.setState({usePointSystem: event.target.checked})} />
+        </Form.Group>
+        {this.state.usePointSystem && (<Form.Group>
+          <Form.Label>Maximum amount of points</Form.Label>
+          <Form.Control type="number" min="1" value={this.state.maxPoints} onChange={event => this.handleChange(event, "maxPoints")}/>
+        </Form.Group>)}
         {this.props.groupName && (
           <ButtonGroup className="fullWidth">
             <Button variant="primary" className="flexShare" onClick={this.submitGroup}>Save Group</Button>
