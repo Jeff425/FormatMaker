@@ -51,8 +51,6 @@ class FormatEditor extends Component {
     this.props.onTabChange(key);
   }
   
-  // <input type="file" ref="formatLoader" className="hidden" onChange={this.props.onLoad} accept=".format" />
-  // <Button variant="primary" onClick={() => this.refs.formatLoader.click()}>Load</Button>
   render() {  
     return (
       <div className="AppContainer">
