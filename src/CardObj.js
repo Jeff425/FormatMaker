@@ -7,6 +7,10 @@ class CardObj extends Component {
   constructor(props) {
     super(props);   
     this.viewCard = this.viewCard.bind(this);
+    this.changePoints = this.changePoints.bind(this);
+    if (!props.card.points) {
+      this.props.card.points = 1;
+    }
   }
   
   viewCard() {
@@ -15,6 +19,16 @@ class CardObj extends Component {
     } else {
       console.log("Invalid info link, potentially dangerous: " + this.props.card.gathererLink);
     }
+  }
+  
+  changePoints(increment) {
+    if (!this.props.card.points) { //Redundant if already 0, but oh well
+      this.props.card.points = 1;
+    }
+    this.props.card.points += (increment ? 1 : -1);
+    this.props.card.points = Math.max(1, this.props.card.points);
+    this.props.card.points = Math.min(this.props.groupMaxPoints, this.props.card.points);
+    this.forceUpdate();
   }
   
   render() {
@@ -39,6 +53,13 @@ class CardObj extends Component {
         {this.props.onMain && (
           <Button variant="primary" className="sideboard" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
         )}
+        {this.props.usePointSystem && (<div className="pointSection">
+          <div className="d-flex flex-column justify-content-center" data-toggle="tooltip" title="Adjust point value for this card">
+            {this.props.editPoints && <Button variant="primary" onClick={event => this.changePoints(true)}>+</Button>}
+            <Button variant="info" className="my-1">{this.props.card.points ? this.props.card.points : 1}</Button>
+            {this.props.editPoints && <Button variant="primary" onClick={event => this.changePoints(false)}>-</Button>}
+          </div>
+        </div>)}
       </div>
     );
   }

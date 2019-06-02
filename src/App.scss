@@ -212,6 +212,11 @@ footer {
       opacity: 1;
     }
     
+    &:hover ~ .pointSection {
+      display: block;
+      opacity: 1;
+    }
+    
     .foregroundText {
       color: white;
       font-size: 2rem;
@@ -241,6 +246,11 @@ footer {
     }
     
     &:hover ~ .sideboard {
+      display: block;
+      opacity: 1;
+    }
+    
+    &:hover ~ .pointSection {
       display: block;
       opacity: 1;
     }
@@ -288,6 +298,21 @@ footer {
     z-index: 2;
     top: 0%;
     right: 0%;
+    
+    &:hover {
+      display: block;
+      opacity: 1;
+    }
+  }
+  
+  .pointSection {
+    display: none;
+    opacity: 0;
+    position: absolute;
+    z-index: 2;
+    right: 0%;
+    top: 50%;
+    transform: translateY(-50%);
     
     &:hover {
       display: block;
