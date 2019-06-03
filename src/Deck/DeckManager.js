@@ -16,7 +16,7 @@ function CardSection(props) {
       <TitledDivider title={props.title} />
       <div className="centerAlign">
         {props.cards.map(card => {
-          return <CardObj card={card} key={card.name} count={props.deckAmount[card.name]} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} />
+          return <CardObj card={card} key={card.name} count={props.deckAmount[card.name]} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
         })}
       </div>
     </div>
@@ -66,26 +66,42 @@ class DeckManager extends Component {
     const banned = [];
     const warningTotalGroups = [];
     const warningCopies = [];
+    const warningPointGroups = [];
     let notLegal = false;
     const seen = new Set();
+    // combined is the name of all cards in both the deck and sideboard
     const combined = this.props.deck.concat(this.props.side).filter(card => {
       if (!seen.has(card.name)) {
         seen.add(card.name);
         return true;
       }
       return false;
-    });  
+    });
+    
+    // combinedAmount is the total amount of each card
     const combinedAmount = this.sumObjects(this.props.deckAmount, this.props.sideAmount);
     if (combined) {
+      
+      // Create an object for each group to keep track of
       for (let i = 0; i < this.props.groups.length; i++) {
         warningTotalGroups.push({count: 0, cards: []});
+        warningPointGroups.push({points: 0, cards: []});
       }
+      
+      // Loop through each card, find which group it belongs to, then increment the total amount of cards in that group
+      // Sum all points as well
       combined.forEach(card => {
         if (!(card.name in this.props.formatIds)) {
           return;
         }
-        warningTotalGroups[this.props.formatIds[card.name].groupIndex].count += combinedAmount[card.name];
+        const groupIndex = this.props.formatIds[card.name].groupIndex;
+        warningTotalGroups[groupIndex].count += combinedAmount[card.name];
+        const pointValue = isNaN(card.points) ? 0 : card.points;
+        warningPointGroups[groupIndex].points += (combinedAmount[card.name] * pointValue);
       });
+      
+      // Loop through each card to see if it has too many copies total, or if too many cards are in the group it belongs to
+      // If a group has too many points, check if a card is worth points before adding it to the warning group
       combined.forEach(card => {        
         if (!(card.name in this.props.formatIds)) {
           banned.push(card);
@@ -98,6 +114,10 @@ class DeckManager extends Component {
         if (this.props.groups[groupIndex].maxTotal > 0 && warningTotalGroups[groupIndex].count > this.props.groups[groupIndex].maxTotal) {
           notLegal = true;
           warningTotalGroups[groupIndex].cards.push(card);
+        }
+        if (this.props.groups[groupIndex].usePointSystem && card.points && warningPointGroups[groupIndex].points > this.props.groups[groupIndex].maxPoints) {
+          notLegal = true;
+          warningPointGroups[groupIndex].cards.push(card);
         }
       });
     }
@@ -154,7 +174,7 @@ class DeckManager extends Component {
           </Container>
           <div className="centerAlign">
             {this.props.deck && this.props.deck.map(card => {
-              return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} />;
+              return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
             })}
           </div>
           <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount +  ")" + sideboardError} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
@@ -163,7 +183,11 @@ class DeckManager extends Component {
           <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Too many copies (Please lower card counts)" cards={warningCopies} subtract={true} />
           {warningTotalGroups.map((group, index) => {
             const title = "\"" + this.props.groups[index].groupName + "\" has too many cards (Please remove " + (group.count - this.props.groups[index].maxTotal) + " cards)";
-            return <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} />
+            return <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} usePointSystem={this.props.groups[index].usePointSystem} />
+          })}
+          {warningPointGroups.map((group, index) => {
+            const title = "\"" + this.props.groups[index].groupName + "\" has too many points (Please lower points by " + (group.points - this.props.groups[index].maxPoints) + " points)";
+            return <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} usePointSystem={this.props.groups[index].usePointSystem} />
           })}
         </div>
       );

@@ -113,7 +113,7 @@ class FormatEditor extends Component {
               );
             })}
             <Tab eventKey="addGroup" title="Add Group">
-              <GroupEditor onSubmitGroup={this.props.onSubmitGroup} checkName={this.checkGroupName} />
+              <GroupEditor onSubmitGroup={this.onSubmitGroupHide} checkName={this.checkGroupName} />
             </Tab>
           </Tabs>
         </div>

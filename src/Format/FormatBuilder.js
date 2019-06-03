@@ -271,7 +271,7 @@ class FormatBuilderBase extends Component {
         return;
       }
     }
-    const newGroup = {groupName: groupName, maxTotal: maxTotal, maxCopies: maxCopies, cards: []};
+    const newGroup = {groupName: groupName, maxTotal: maxTotal, maxCopies: maxCopies, usePointSystem: usePointSystem, maxPoints: maxPoints, cards: []};
     this.setState({groups: this.state.groups.concat(newGroup), currentTab: "extra_" + groupName});
   }
   
