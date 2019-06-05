@@ -152,7 +152,7 @@ class DeckManager extends Component {
     if (this.props.deck && (this.props.deck.length > 0 || this.props.side.length > 0)) {
       return (
         <div className="AppContainer">
-          <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck" />
+          <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck,.txt" />
           <h1>Deck Manager</h1>
           <ButtonGroup className="fullWidth mt-4">
             <Button variant="primary" onClick={this.props.onSave}>Export Deck</Button>
@@ -194,7 +194,7 @@ class DeckManager extends Component {
     }
     return (
       <div className="AppContainer">
-        <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck" />
+        <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck,.txt" />
         <h1>Deck Manager</h1>
         <Button className="fullWidth mt-4" variant="primary" onClick={() => this.deckLoadRef.click()}>Import Deck</Button>
         <div className="mt-4">

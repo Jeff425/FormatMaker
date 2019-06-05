@@ -145,20 +145,27 @@ class DeckBuilder extends Component {
       const sideSelection = [];
       const sideAmount = {};
       let isSideboard = false;
-      reader.result.split("\n").forEach(line => {
+      reader.result.replace(/\r/g, '').split("\n").forEach(line => {      
         if (!isSideboard && line === "//Sideboard") {
           isSideboard = true;
           return;
         }
-        const count = parseInt(line.substr(0, line.indexOf(" ")));
+        let tempSideboard = false;
+        let startIndex = 0;
+        if (line.substr(0, 4) === "SB: ") {
+          tempSideboard = true;
+          startIndex = 4;
+        }
+        
+        const count = parseInt(line.substr(startIndex, line.indexOf(" ")));
         if (isNaN(count)) {
           return;
         }
-        const name = line.substr(line.indexOf(" ") + 1);
+        const name = line.substr(line.indexOf(" ", startIndex) + 1);
         const cardDetails = this.state.formatIds[name];
         if (cardDetails) {
           const card = cardDetails.card;
-          if (isSideboard) {
+          if (isSideboard || tempSideboard) {
             sideSelection.push(card);
             sideAmount[card.name] = count;
           } else {

@@ -88,7 +88,7 @@ class OwnFormatSelector extends Component {
         </Alert>}
         <div className="d-flex flex-row flex-wrap">
         {this.state.formats.map(format => (
-          <FormatCard format={format} removeFormat={this.removeFormat} />
+          <FormatCard format={format} removeFormat={this.removeFormat} key={format.id} />
         ))}
         </div>
       </div>

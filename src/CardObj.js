@@ -2,6 +2,16 @@ import React, { Component } from 'react';
 import Button from 'react-bootstrap/Button';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
+// Work around because the number 0 was appearing for this button even when the button should not be shown
+class ButtonNumber extends Component {
+  render() {
+    if (this.props.alwaysShow || (this.props.number && this.props.number !== 0)) {
+      return <Button variant="info" className="my-1">{this.props.number ? this.props.number : 0}</Button>;
+    }
+    return null;
+  }
+}
+
 class CardObj extends Component {
   
   constructor(props) {
@@ -56,7 +66,7 @@ class CardObj extends Component {
         {this.props.usePointSystem && (<div className="pointSection">
           <div className="d-flex flex-column justify-content-center" data-toggle="tooltip" title={this.props.editPoints ? "Adjust point value for this card" : "Point value for this card"}>
             {this.props.editPoints && <Button variant="primary" onClick={event => this.changePoints(true)}>+</Button>}
-            {(this.props.editPoints || this.props.card.points) && <Button variant="info" className="my-1">{this.props.card.points ? this.props.card.points : 0}</Button>}
+            <ButtonNumber alwaysShow={this.props.editPoints} number={this.props.card.points} />
             {this.props.editPoints && <Button variant="primary" onClick={event => this.changePoints(false)}>-</Button>}
           </div>
         </div>)}

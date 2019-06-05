@@ -45,7 +45,7 @@ class FormatSelector extends Component {
         {this.state.isAuthed && <h4>You may view your own formats <Link to={ROUTES.ownformat}>here</Link></h4>}
         <div className="d-flex flex-row flex-wrap">
         {this.state.formats.map(format => (
-          <FormatCard format={format} />
+          <FormatCard format={format} key={format.id} />
         ))}
         </div>
       </div>

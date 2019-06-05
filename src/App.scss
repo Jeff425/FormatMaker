@@ -175,6 +175,8 @@ footer {
   position: relative;
   display: inline-block;
   user-select: none;
+  width: 146px;
+  height: 204px;
   
   button {
     width: 40px;
@@ -235,6 +237,10 @@ footer {
   }  
   
   img {
+    vertical-align: top;
+    min-width: 146px;
+    min-height: 204px;
+    
     &:hover ~ .cardSearch {
       display: block;
       opacity: 1;
