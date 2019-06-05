@@ -26,6 +26,7 @@ class Firebase {
     this.writeFormat = this.writeFormat.bind(this);
     this.readFormat = this.readFormat.bind(this);
     this.queryFormats = this.queryFormats.bind(this);
+    this.getSponsoredFormats = this.getSponsoredFormats.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
     this.cleanUpDB = this.cleanUpDB.bind(this);
   }
@@ -128,6 +129,10 @@ class Firebase {
       return this.db.collection("formats").where("author", "==", authUser.uid).orderBy("lastUpdate", "desc").get();
     }
     return this.db.collection("formats").where("author", "==", "ii4m8G6M6nOtR7PScINVEK7mV6R2").orderBy("lastUpdate", "desc").limit(25).get();
+  }
+  
+  getSponsoredFormats() {
+    return this.db.collection("formats").doc("szCpUyqs9DSXN5SbSelk").get();
   }
   
   deleteFormat(authUser, formatId, successFunc, errorFunc) {  
