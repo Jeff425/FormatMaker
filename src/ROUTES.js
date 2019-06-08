@@ -1,5 +1,6 @@
 const ROUTES = {
   format: "/format",
+  formatdetails: "/formatdetails",
   deck: "/deck",
   signin: "/signin",
   signup: "/signup",

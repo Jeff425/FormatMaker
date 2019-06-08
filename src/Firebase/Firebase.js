@@ -25,6 +25,7 @@ class Firebase {
     this.passwordUpdate = this.passwordUpdate.bind(this);
     this.writeFormat = this.writeFormat.bind(this);
     this.readFormat = this.readFormat.bind(this);
+    this.getFormatMetadata = this.getFormatMetadata.bind(this);
     this.queryFormats = this.queryFormats.bind(this);
     this.getSponsoredFormats = this.getSponsoredFormats.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
@@ -122,6 +123,10 @@ class Firebase {
     .catch(error => {
       errorFunc("Failed to get format: " + error.code);
     });
+  }
+  
+  getFormatMetadata(firebaseId) {
+    return this.db.collection("formats").doc(firebaseId).get();
   }
   
   queryFormats(authUser = null) {

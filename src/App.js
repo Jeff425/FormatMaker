@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route } from 'react-router-dom';
 import MainPage from './MainPage';
 import NavigationBar from './NavigationBar';
 import FormatBuilder from './Format/FormatBuilder';
+import FormatDetails from './Format/FormatDetails';
 import DeckBuilder from './Deck/DeckBuilder';
 import SignInPage from './Account/SignInPage';
 import SignUpPage from './Account/SignUpPage';
@@ -42,6 +43,7 @@ class App extends Component {
           <NavigationBar authUser={this.state.authUser} />
           <div className="content">
             <Route exact={true} path="/" component={MainPage} />
+            <Route path={ROUTES.formatdetails + "/:formatId"} component={FormatDetails} />
             <Route path={ROUTES.format + "/:formatId?"} component={FormatBuilder} />
             <Route path={ROUTES.deck + "/:formatId"} component={DeckBuilder} />
             <Route exact={true} path={ROUTES.deck} component={FormatSelector} />

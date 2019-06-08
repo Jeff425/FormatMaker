@@ -17,7 +17,7 @@ class Changelog extends Component {
     .then(result => result.docs)
     .then(changeQuery => {
       const changes = changeQuery.filter(doc => doc.exists).map(doc => { return {...doc.data()}; });
-    this.setState({isLoading: false, changes: changes});
+      this.setState({isLoading: false, changes: changes});
     });
   }
   
