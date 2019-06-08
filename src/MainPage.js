@@ -1,9 +1,15 @@
 import React, { Component } from 'react';
 import Button from 'react-bootstrap/Button';
 import { Link } from 'react-router-dom';
+import ReactGA from 'react-ga';
 import ROUTES from './ROUTES';
 
 class MainPage extends Component {
+  
+  componentDidMount() {
+    ReactGA.pageview("/");
+  }
+  
   render() {
     return (
       <div className="main-page">
@@ -23,7 +29,7 @@ class MainPage extends Component {
             <h6 className="text-muted">No Account Needed!</h6>
           </div>
         </div>
-        <h3 className="mt-5">Checkout the <a href="https://discord.gg/S368yWs" target="_blank" rel="noopener noreferrer">Discord Channel!</a></h3>
+        <h3 className="mt-5">Checkout the <ReactGA.OutboundLink eventLabel="discord mainpage" to="https://discord.gg/S368yWs" target="_blank">Discord Channel!</ReactGA.OutboundLink></h3>
       </div>
     );
   }

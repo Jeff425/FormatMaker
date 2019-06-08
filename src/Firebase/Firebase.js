@@ -2,6 +2,7 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
+import ReactGA from 'react-ga';
 
 const config = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -33,26 +34,32 @@ class Firebase {
   }
   
   createUser(email, password) {
+    ReactGA.event({category: "User", action: "Created an account"});
     return this.auth.createUserWithEmailAndPassword(email, password);
   }
   
   signIn(email, password) {
+    ReactGA.event({category: "User", action: "Signed in"});
     return this.auth.signInWithEmailAndPassword(email, password);
   }
   
   signOut() {
+    ReactGA.event({category: "User", action: "Signed out"});
     return this.auth.signOut();
   }
   
   passwordReset(email) {
+    ReactGA.event({category: "User", action: "Sent password reset"});
     return this.auth.sendPasswordResetEmail(email);
   }
   
   passwordUpdate(password) {
+    ReactGA.event({category: "User", action: "Updated password"});
     return this.auth.currentUser.updatePassword(password);
   }
   
   writeFormat(authUser, name, desc, formatString, successFunc, errorFunc, firebaseId = null) {
+    ReactGA.event({category: "Format", action: (firebaseId ? "Updated format " + firebaseId : "Created new format")});
     if (authUser === null) {
       errorFunc("Not signed in");
       return;
@@ -83,7 +90,6 @@ class Firebase {
       })
       .catch(error => {
         errorFunc("Failed to set format: " + error.code);
-        console.log(error);
       });
   }
   
@@ -140,7 +146,8 @@ class Firebase {
     return this.db.collection("formats").doc("szCpUyqs9DSXN5SbSelk").get();
   }
   
-  deleteFormat(authUser, formatId, successFunc, errorFunc) {  
+  deleteFormat(authUser, formatId, successFunc, errorFunc) {
+    ReactGA.event({category: "Format", action: "Deleting Format"});
     this.storage.ref().child("format/" + authUser.uid + "/" + formatId + ".format").delete()
     .then(() => this.cleanUpDB(formatId, successFunc, errorFunc))
     .catch(error => {

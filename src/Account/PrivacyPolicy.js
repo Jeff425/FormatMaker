@@ -21,6 +21,10 @@ HOW DO WE USE YOUR PERSONAL INFORMATION?
 We use your Email Address in order to allow contact you in regards to your account, in order to identify your account in the future, and verify that it is you who created the account.
 We use the Device Information that we collect to help us screen for potential risk and fraud (in particular, your IP address), and more generally to improve and optimize our Site (for example, by generating analytics about how our customers browse and interact with the Site, and to assess the success of our marketing and advertising campaigns).
 
+THIRD-PARTY
+We use cookies from third-party partners such as Google Analytics. This allows us to track how users browse the site and improve the end-user experience. This information will not be shared outside of this inteded use.
+If you would like to opt-out of Google Analytics, you may do so with this browser add-on: https://tools.google.com/dlpage/gaoptout
+
 DO NOT TRACK
 Please note that we do not alter our Site's data collection and use practices when we see a Do Not Track signal from your browser.
 

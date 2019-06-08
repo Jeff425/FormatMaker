@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -118,6 +119,7 @@ class FormatBuilderBase extends Component {
   }
   
   componentDidMount() {
+    ReactGA.pageview(ROUTES.format + "/" + (this.props.match.params.formatId ? this.props.match.params.formatId : ""));
     this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
       if (auth) {
         if (!auth.emailVerified) {
@@ -132,6 +134,7 @@ class FormatBuilderBase extends Component {
         }
       } else {
         this.props.history.push(ROUTES.signin + ROUTES.format + encodeURIComponent("/") + (this.props.match.params.formatId ? encodeURIComponent(this.props.match.params.formatId) : ""));
+        ReactGA.event({category: "Redirection", action: "Format to sign in page"});
       }
     });
   }

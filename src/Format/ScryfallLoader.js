@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import InputGroup from 'react-bootstrap/InputGroup';
 import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
@@ -30,7 +31,8 @@ class ScryfallLoader extends Component {
   
   scryfallSearch() {
     this.setState({searchEnabled: false, searchResults: [], page: 1});
-    this.scryfallLoop("https://api.scryfall.com/cards/search?q=" + this.state.searchString);   
+    this.scryfallLoop("https://api.scryfall.com/cards/search?q=" + this.state.searchString);
+    ReactGA.event({category: "Search", action: "Scryfall Search", label: this.state.searchString});
   }
   
   scryfallLoop(query) {
@@ -108,7 +110,7 @@ class ScryfallLoader extends Component {
           </InputGroup.Append>               
         </InputGroup>
         <div className="bottomExtension centerAlign mb-2">
-          <label htmlFor="scryfallSearch">Scryfall Syntax guide can be found <a href="https://scryfall.com/docs/syntax" target="_blank" rel="noopener noreferrer">here</a></label>
+          <label htmlFor="scryfallSearch">Scryfall Syntax guide can be found <ReactGA.OutboundLink eventLabel="scryfall syntax loader" to="https://scryfall.com/docs/syntax" target="_blank">here</ReactGA.OutboundLink></label>
           <hr className="mt-1 mb-1"/>
           <div>Examples:</div>
           <div>f:s usd&lt;0.05<span className="text-muted"> : All standard legal cards that cost less than $0.05</span></div>

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import { Link } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import { withFirebase } from './../Firebase/FirebaseContext';
@@ -17,6 +18,7 @@ class OwnFormatSelector extends Component {
   }
   
   componentDidMount() {
+    ReactGA.pageview(ROUTES.ownformat);
     this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
       if (auth) {
         if (!auth.emailVerified) {

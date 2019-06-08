@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import { saveAs } from 'file-saver';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -6,6 +7,7 @@ import Col from 'react-bootstrap/Col';
 import CardSelection from './CardSelection';
 import DeckManager from './DeckManager';
 import { withFirebase } from './../Firebase/FirebaseContext';
+import ROUTES from './../ROUTES';
 
 class DeckBuilder extends Component {
   
@@ -25,6 +27,7 @@ class DeckBuilder extends Component {
   }
   
   componentDidMount() {
+    ReactGA.pageview(ROUTES.deck + "/" + this.props.match.params.formatId);
     this.props.firebase.readFormat(this.props.match.params.formatId, this.successRead, this.errorRead);
   }
   
@@ -191,6 +194,7 @@ class DeckBuilder extends Component {
     })
     .then(console.log);
     */
+    ReactGA.event({category: "Affiliate Link", action: "TCGPlayer", label: this.props.match.params.formatId});
     window.open("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&c=" + this.deckString(true), "_blank");
   }
   

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
 import { withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
 import { privacyTitle, privacyBody } from './PrivacyPolicy';
 import { termsTitle, termsBody } from './TermsOfService';
+import DocumentModal from './DocumentModal';
 
 class SignUpPageBase extends Component {
   
@@ -132,18 +132,8 @@ class SignUpForm extends Component {
         </Form.Group>
         {this.state.feedback && <p>{this.state.feedback}</p>}
         <Button variant="primary" type="submit" disabled={this.state.sending}>Create Account</Button>
+        <DocumentModal showModal={this.state.showModal} hideModal={() => this.setState({showModal: false})} modalTitle={this.state.modalTitle} modalBody={this.state.modalBody} />
         
-        <Modal show={this.state.showModal} onHide={() => this.setState({showModal: false})} size="lg">
-          <Modal.Header closeButton>
-            <Modal.Title>{this.state.modalTitle}</Modal.Title>
-          </Modal.Header>
-          <Modal.Body><Form.Control as="textarea" rows="20" className="textAreaModal">{this.state.modalBody}</Form.Control></Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => this.setState({showModal: false})}>
-              Close
-            </Button>
-          </Modal.Footer>
-        </Modal>
       </Form>
     );
   }

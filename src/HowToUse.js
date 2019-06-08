@@ -1,9 +1,15 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import ROUTES from './ROUTES';
 
 class HowToUse extends Component {
+  
+  componentDidMount() {
+    ReactGA.pageview(ROUTES.howto);
+  }
   
   render() {
     return (

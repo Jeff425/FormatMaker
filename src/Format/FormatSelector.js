@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import { Link } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
@@ -12,6 +13,7 @@ class FormatSelector extends Component {
   }
   
   componentDidMount() {
+    ReactGA.pageview(ROUTES.deck);
     this.props.firebase.queryFormats()
     .then(result => result.docs)
     .then(formatQuery => {
