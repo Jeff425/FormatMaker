@@ -23,9 +23,7 @@ class MainPage extends Component {
             <h6 className="text-muted">No Account Needed!</h6>
           </div>
         </div>
-        <div className="mt-5">
-          <h3>Checkout the <a href="https://discord.gg/S368yWs" target="_blank" rel="noopener noreferrer">Discord Channel!</a></h3>
-        </div>
+        <h3 className="mt-5">Checkout the <a href="https://discord.gg/S368yWs" target="_blank" rel="noopener noreferrer">Discord Channel!</a></h3>
       </div>
     );
   }
