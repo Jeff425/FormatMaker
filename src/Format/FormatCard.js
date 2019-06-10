@@ -14,7 +14,8 @@ class FormatCard extends Component {
           <Card.Text>{this.props.format.description}</Card.Text>
           <div className="d-flex justify-content-between mt-auto align-items-center">
             {this.props.removeFormat && <Card.Link as={Link} to={ROUTES.format + "/" + this.props.format.id}>Edit Format</Card.Link>}
-            <Card.Link as={Link} to={ROUTES.deck + "/" + this.props.format.id}>{this.props.removeFormat ? "Make Deck" : "Select Format"}</Card.Link>
+            {!this.props.removeFormat && <Card.Link as={Link} to={ROUTES.formatdetails + "/" + this.props.format.id}>View Format Info</Card.Link>}
+            <Card.Link as={Link} to={ROUTES.deck + "/" + this.props.format.id}>Make Deck</Card.Link>     
             {this.props.removeFormat && <Button variant="danger" className="ml-4" onClick={event => this.props.removeFormat(this.props.format.id)}><FontAwesomeIcon icon="times" className="fa-w-16" /></Button>}
           </div>
         </Card.Body> 

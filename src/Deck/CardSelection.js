@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import OmniSearchbar from './../OmniSearchbar';
 import CardObj from './../CardObj';
+import ROUTES from './../ROUTES';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Tabs from 'react-bootstrap/Tabs';
 import Tab from 'react-bootstrap/Tab';
 import Card from 'react-bootstrap/Card';
 import Pagination from 'react-bootstrap/Pagination';
-import { withRouter } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { withHideApp } from './../HideApp';
 
 class CardSelection extends Component {
@@ -35,7 +36,7 @@ class CardSelection extends Component {
         <h1>Card Selection</h1>
         <OmniSearchbar onSearchChange={this.onOmniChange} sortPass={this.props.sortPass} />
         <ButtonGroup className="fullWidth">
-          <Button variant="primary" className="flexShare" onClick={() => this.props.history.push("/deck")}>Select Another Format</Button>
+          <Button variant="primary" className="flexShare" onClick={() => this.props.history.push(ROUTES.deck)}>Select Another Format</Button>
           <Button variant="info" className="flexShare" onClick={() => this.setState({showInfo: !this.state.showInfo})}>Format Information</Button>
         </ButtonGroup>
         {this.state.showInfo && (<Card className="fullWidth">
@@ -55,6 +56,9 @@ class CardSelection extends Component {
                   {this.props.sideMin > 0 && <div className="mr-auto">{"Side minimum: " + this.props.sideMin}</div>}
                   {this.props.sideMax > 0 && <div>{"Side maximum: " + this.props.sideMax}</div>}
                 </div>)}
+              <div className="d-flex">
+                <Link to={ROUTES.formatdetails + "/" + this.props.match.params.formatId} className="mx-auto"><Button>View Full Information</Button></Link>
+              </div>
             </Card.Text>
           </Card.Body>
         </Card>)}

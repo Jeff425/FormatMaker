@@ -20,7 +20,7 @@ class FormatBuilderBase extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {name: "", desc: "", showInfo: false, isLoading: true, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, deckMin: 60, deckMax: 0, sideboardAllowed: true, sideMin: 0, sideMax: 15, groups: [
+    this.state = {name: "", desc: "", longDesc: "", showInfo: false, isLoading: true, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, deckMin: 60, deckMax: 0, sideboardAllowed: true, sideMin: 0, sideMax: 15, groups: [
       {
         "groupName": "Legal Cards",
         "maxTotal": 0,
@@ -217,7 +217,7 @@ class FormatBuilderBase extends Component {
   
   saveFormat() {
     if (this.state.name !== "" && this.state.desc !== "") {
-      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, JSON.stringify({deckMin: this.state.deckMin, deckMax: this.state.deckMax, sideboardAllowed: this.state.sideboardAllowed, sideMin: this.state.sideMin, sideMax: this.state.sideMax, groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
+      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, this.state.longDesc, JSON.stringify({deckMin: this.state.deckMin, deckMax: this.state.deckMax, sideboardAllowed: this.state.sideboardAllowed, sideMin: this.state.sideMin, sideMax: this.state.sideMax, groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
       this.setState({isLoading: true});
     } else {
       this.setState({showInfo: true});
@@ -238,8 +238,8 @@ class FormatBuilderBase extends Component {
     this.props.firebase.readFormat(firebaseId, this.successRead, this.errorRead, true, this.state.authUser);
   }
   
-  successRead(name, desc, formatText) {
-    this.setState({name: name, desc: desc, showInfo: false, isLoading: false, error: ""});
+  successRead(name, desc, longDesc, formatText) {
+    this.setState({name: name, desc: desc, longDesc: longDesc, showInfo: false, isLoading: false, error: ""});
     const formatIds = new Set();
     const format = JSON.parse(formatText);
     format.groups.forEach(group => {
@@ -343,6 +343,10 @@ class FormatBuilderBase extends Component {
             <FormGroup>
               <FormLabel>Format Description</FormLabel>
               <FormControl as="textarea" rows="5" value={this.state.desc} onChange={event => this.editControl(event, "desc")} maxLength={250} />
+            </FormGroup>
+            <FormGroup>
+              <FormLabel>Long Format Description <span className="text-muted">For format details page</span> <ReactGA.OutboundLink eventLabel="Markdown Lookup" to="https://guides.github.com/features/mastering-markdown/" target="_blank">Markdown Supported</ReactGA.OutboundLink></FormLabel>
+              <FormControl as="textarea" rows="5" value={this.state.longDesc} onChange={event => this.editControl(event, "longDesc")} maxLength={20000} />
             </FormGroup>
             <FormRow>
               <FormGroup as={Col}>

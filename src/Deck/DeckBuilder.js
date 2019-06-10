@@ -31,7 +31,7 @@ class DeckBuilder extends Component {
     this.props.firebase.readFormat(this.props.match.params.formatId, this.successRead, this.errorRead);
   }
   
-  successRead(name, desc, formatText) {
+  successRead(name, desc, longDesc, formatText) {
     const formatIds = {};
     const format = JSON.parse(formatText);
     for (let i = 0; i < format.groups.length; i++) {

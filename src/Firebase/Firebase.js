@@ -58,7 +58,7 @@ class Firebase {
     return this.auth.currentUser.updatePassword(password);
   }
   
-  writeFormat(authUser, name, desc, formatString, successFunc, errorFunc, firebaseId = null) {
+  writeFormat(authUser, name, desc, longDesc, formatString, successFunc, errorFunc, firebaseId = null) {
     ReactGA.event({category: "Format", action: (firebaseId ? "Updated format " + firebaseId : "Created new format")});
     if (authUser === null) {
       errorFunc("Not signed in");
@@ -72,9 +72,12 @@ class Firebase {
       errorFunc("Empty format");
       return;
     }
+    if (!longDesc) { //For backwards compatibility
+      longDesc = "";
+    }
     (firebaseId ?
-      this.db.collection("formats").doc(firebaseId).set({name: name, description: desc, author: authUser.uid, lastUpdate: app.firestore.Timestamp.now()}) :
-      this.db.collection("formats").add({name: name, description: desc, author: authUser.uid, lastUpdate: app.firestore.Timestamp.now()}))
+      this.db.collection("formats").doc(firebaseId).set({name: name, description: desc, longDescription: longDesc, author: authUser.uid, lastUpdate: app.firestore.Timestamp.now()}) :
+      this.db.collection("formats").add({name: name, description: desc, longDescription: longDesc, author: authUser.uid, lastUpdate: app.firestore.Timestamp.now()}))
       .then(docRef => {
         const formatRef = this.storage.ref().child("format/" + authUser.uid + "/" + (firebaseId ? firebaseId : docRef.id) + ".format");
         formatRef.putString(formatString)
@@ -111,7 +114,7 @@ class Firebase {
           fetch(url)
           .then(result => {
             result.text().then(data => {
-              successFunc(doc.data().name, doc.data().description, data);  
+              successFunc(doc.data().name, doc.data().description, doc.data().longDescription, data);  
             });            
           })
           .catch(error => {
