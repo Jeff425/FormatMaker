@@ -41,7 +41,7 @@ class SignUpPageBase extends Component {
       <div className="main-page">
         <div className="singleApp">
           <h1>Sign up to FormatBuilder</h1>
-            <SignUpForm firebase={this.props.firebase} />
+          <SignUpForm firebase={this.props.firebase} />
         </div>
       </div>
     );
@@ -52,7 +52,7 @@ class SignUpForm extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {email: "", pwd: "", pwd2: "", validated: false, mismatch: false, feedback: "", sending: false, showModal: false, modalTitle: "", modalBody: ""};
+    this.state = {email: "", pwd: "", pwd2: "", displayName: "", validated: false, mismatch: false, feedback: "", sending: false, showModal: false, modalTitle: "", modalBody: ""};
     this.onFormChange = this.onFormChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.showPrivacyModal = this.showPrivacyModal.bind(this);
@@ -89,7 +89,13 @@ class SignUpForm extends Component {
       this.props.firebase
         .createUser(this.state.email, this.state.pwd)
         .then(authUser => {
-          this.setState({feedback: "Success!", sending: false});
+          this.props.firebase.displayNameUpdate(this.state.displayName)
+          .then(() => {
+            this.setState({feedback: "Success!", sending: false});
+          })
+          .catch(error => {
+            this.setState({feedback: "Error setting display name: " + error.message, sending: false});
+          });
         })
         .catch(error => {
           this.setState({feedback: error.message, sending: false});
@@ -125,6 +131,11 @@ class SignUpForm extends Component {
           <Form.Control.Feedback type="invalid">{this.state.mismatch ? "Please enter the same password" : "Please enter a password"}</Form.Control.Feedback>
         </Form.Group>
         <Form.Group>
+          <Form.Label>Enter Display Name</Form.Label>
+          <Form.Control required value={this.state.displayName} onChange={event => this.onFormChange(event, "displayName")} placeholder="Enter display name" />
+          <Form.Control.Feedback type="invalid">Please enter a display name</Form.Control.Feedback>
+        </Form.Group>
+        <Form.Group>
           <Form.Check required type="checkbox" label="By checking this box you agree to our Terms of Service and Privacy Policy" />
           <div className="mt-1">
             Read our <Button variant="link" className="border-0 p-0 align-baseline" onClick={this.showTermsModal}>Terms of Service</Button> and <Button variant="link" className="border-0 p-0 align-baseline" onClick={this.showPrivacyModal}>Privacy Policy</Button>
@@ -133,7 +144,6 @@ class SignUpForm extends Component {
         {this.state.feedback && <p>{this.state.feedback}</p>}
         <Button variant="primary" type="submit" disabled={this.state.sending}>Create Account</Button>
         <DocumentModal showModal={this.state.showModal} hideModal={() => this.setState({showModal: false})} modalTitle={this.state.modalTitle} modalBody={this.state.modalBody} />
-        
       </Form>
     );
   }

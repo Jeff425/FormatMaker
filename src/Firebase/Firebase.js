@@ -24,6 +24,8 @@ class Firebase {
     this.signOut = this.signOut.bind(this);
     this.passwordReset = this.passwordReset.bind(this);
     this.passwordUpdate = this.passwordUpdate.bind(this);
+    this.displayNameUpdate = this.displayNameUpdate.bind(this);
+    this.getUserInfo = this.getUserInfo.bind(this);
     this.writeFormat = this.writeFormat.bind(this);
     this.readFormat = this.readFormat.bind(this);
     this.getFormatMetadata = this.getFormatMetadata.bind(this);
@@ -53,9 +55,38 @@ class Firebase {
     return this.auth.sendPasswordResetEmail(email);
   }
   
-  passwordUpdate(password) {
+  passwordUpdate(password, currentPassword) {
     ReactGA.event({category: "User", action: "Updated password"});
-    return this.auth.currentUser.updatePassword(password);
+    return new Promise((resolve, reject) => {
+      this.auth.currentUser.reauthenticateAndRetrieveDataWithCredential(app.auth.EmailAuthProvider.credential(this.auth.currentUser.email, currentPassword))
+      .then(() => {
+        this.auth.currentUser.updatePassword(password)
+        .then(resolve)
+        .catch(reject);
+      })
+      .catch(reject);
+    });
+  }
+  
+  displayNameUpdate(displayName) {
+    ReactGA.event({category: "User", action: "Updated display name"});
+    return this.db.collection("users").doc(this.auth.currentUser.uid).set({displayName: displayName});
+  }
+  
+  getUserInfo(uid) {
+    return new Promise((resolve, reject) => {
+      this.db.collection("users").doc(uid).get()
+      .then(doc => {
+        if (doc.exists) {
+          const data = {...doc.data()};
+          data.uid = uid;
+          resolve(data);
+        } else {
+          resolve({notFound: true});
+        }
+      })
+      .catch(reject);
+    });
   }
   
   writeFormat(authUser, name, desc, longDesc, formatString, successFunc, errorFunc, firebaseId = null) {

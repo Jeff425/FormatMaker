@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Button from 'react-bootstrap/Button';
@@ -15,10 +16,15 @@ class FormatDetails extends Component {
   }
   
   componentDidMount() {
+    ReactGA.pageview(ROUTES.formatdetails + "/" + (this.props.match.params.formatId ? this.props.match.params.formatId : ""));
     this.props.firebase.getFormatMetadata(this.props.match.params.formatId)
     .then(formatDoc => {
       if (formatDoc.exists) {
-        this.setState({isLoading: false, formatData: formatDoc.data()});
+        this.setState({formatData: formatDoc.data()});
+        this.props.firebase.getUserInfo(formatDoc.data().author)
+        .then(userInfo => {
+          this.setState({isLoading: false, authorName: userInfo.displayName});
+        });
       }
     });
   }
@@ -31,9 +37,9 @@ class FormatDetails extends Component {
         </div>
       );
     }
-    let description = <h5>{this.state.formatData.description}</h5>;
+    let description = this.state.formatData.description;
     if (this.state.formatData.longDescription) {
-      description = <h5><ReactMarkdown source={this.state.formatData.longDescription} linkTarget="_blank" /></h5>;
+      description = <ReactMarkdown source={this.state.formatData.longDescription} linkTarget="_blank" />;
     }
     return (
       <Container className="marginTop30px">
@@ -41,16 +47,14 @@ class FormatDetails extends Component {
           <h1>{this.state.formatData.name}</h1>
           
         </Row>
-        
+        {this.state.authorName && <Row><Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.authorName}</h4></Link></Row>}
         <hr />
-        
         <Row>{description}</Row>
-        <Row className="mt-3"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create Deck for this format</Button></Link></Row>        
+        <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>        
       </Container>
     );
   }
 }
 //<Button variant="danger" className="ml-auto maxHeightFit">Report Format</Button>
-//<Row><h4>Description:</h4></Row>
-//<Row><h3 className="text-muted">By: Test User</h3></Row>
+
 export default withFirebase(withRouter(FormatDetails));

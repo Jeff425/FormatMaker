@@ -13,8 +13,10 @@ import PasswordChange from './Account/PasswordChange';
 import EmailVerify from './Account/EmailVerify';
 import FormatSelector from './Format/FormatSelector';
 import OwnFormatSelector from './Format/OwnFormatSelector';
+import UserFormatSelector from './Format/UserFormatSelector';
 import HowToUse from './HowToUse';
 import Changelog from './Changelog';
+import AccountInfo from './Account/AccountInfo';
 import { withFirebase } from './Firebase/FirebaseContext';
 import ROUTES from './ROUTES';
 import Footer from './Footer';
@@ -55,6 +57,8 @@ class App extends Component {
             <Route path={ROUTES.passwordchange} component={PasswordChange} />
             <Route path={ROUTES.emailverify} component={EmailVerify} />
             <Route path={ROUTES.changelog} component={Changelog} />
+            <Route path={ROUTES.accountinfo} component={AccountInfo} />
+            <Route path={ROUTES.userformat + "/:userId"} component={UserFormatSelector} />
           </div>
           <Footer />
         </div>
