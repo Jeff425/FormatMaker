@@ -17,24 +17,12 @@ class FormatSelector extends Component {
     this.props.firebase.queryFormats()
     .then(result => result.docs)
     .then(formatQuery => {
-      const authorSet = new Set();
       const formats = formatQuery.filter(doc => doc.exists).map(doc => {
         const format = {...doc.data()};
         format.id = doc.id;
-        authorSet.add(format.author);
         return format;
       });
-      Promise.all(Array.from(authorSet).map(this.props.firebase.getUserInfo))
-      .then(authorInfos => {
-        const authorNames = {};
-        authorInfos.forEach(authorInfo => {
-          if (!authorInfo.notFound) {
-            authorNames[authorInfo.uid] = authorInfo.displayName;
-          }
-        });
-        this.setState({isLoading: false, authorNames: authorNames});
-      });
-      this.setState({formats: formats});
+      this.setState({formats: formats, isLoading: false});
     });
     this.props.firebase.getSponsoredFormats() //curently only 1 format
     .then(doc => {
@@ -65,10 +53,10 @@ class FormatSelector extends Component {
         {this.state.isAuthed && <h4>You may view your own formats <Link to={ROUTES.ownformat}>here</Link></h4>}
         <div className="d-flex flex-row flex-wrap">
         {this.state.sponsoredFormats.map(format => (
-          <FormatCard format={format} key={format.id} authorName={this.state.authorNames[format.author]} />
+          <FormatCard format={format} key={format.id} />
         ))}
         {this.state.formats.map(format => (
-          <FormatCard format={format} key={format.id} authorName={this.state.authorNames[format.author]} />
+          <FormatCard format={format} key={format.id} />
         ))}
         </div>
       </div>

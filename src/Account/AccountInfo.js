@@ -44,7 +44,7 @@ class UpdateDisplayName extends Component {
       <Form noValidate onSubmit={this.handleSubmit} validated={this.state.validated}>
         <Form.Group>
           <Form.Label>Set Display Name {this.state.oldName && <span className="text-muted">{this.state.oldName}</span>}</Form.Label>
-          <Form.Control required value={this.state.displayName} onChange={event => this.setState({displayName: event.target.value})} placeholder="Enter Display Name" />
+          <Form.Control required value={this.state.displayName} onChange={event => this.setState({displayName: event.target.value})} placeholder="Enter Display Name" maxLength={25} />
           <Form.Control.Feedback type="invalid">Please enter a display name</Form.Control.Feedback>
         </Form.Group>
         {this.state.feedback && <p>{this.state.feedback}</p>}

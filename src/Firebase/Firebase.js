@@ -2,6 +2,7 @@ import app from 'firebase/app';
 import 'firebase/auth';
 import 'firebase/firestore';
 import 'firebase/storage';
+import 'firebase/functions';
 import ReactGA from 'react-ga';
 
 const config = {
@@ -19,6 +20,7 @@ class Firebase {
     this.auth = app.auth();
     this.db = app.firestore();
     this.storage = app.storage();
+    this.functions = app.functions();
     this.createUser = this.createUser.bind(this);
     this.signIn = this.signIn.bind(this);
     this.signOut = this.signOut.bind(this);
@@ -70,7 +72,8 @@ class Firebase {
   
   displayNameUpdate(displayName) {
     ReactGA.event({category: "User", action: "Updated display name"});
-    return this.db.collection("users").doc(this.auth.currentUser.uid).set({displayName: displayName});
+    const displayNameCallable = this.functions.httpsCallable("updateDisplayName");
+    return displayNameCallable({name: displayName});
   }
   
   getUserInfo(uid) {

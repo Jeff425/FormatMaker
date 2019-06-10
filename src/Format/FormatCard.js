@@ -11,7 +11,7 @@ class FormatCard extends Component {
       <Card key={this.props.format.id} className="formatCard ml-3 mr-3 mt-3">
         <Card.Body className="d-flex flex-column">
           <Card.Title>{this.props.format.name}</Card.Title>
-          {this.props.authorName && <Link to={ROUTES.userformat + "/" + this.props.format.author} data-toggle="tooltip" title="View this user's formats"><Card.Subtitle className="mb-2 text-muted">{this.props.authorName}</Card.Subtitle></Link>}
+          {this.props.format.authorName && <Link to={ROUTES.userformat + "/" + this.props.format.author} data-toggle="tooltip" title="View this user's formats"><Card.Subtitle className="mb-2 text-muted">{this.props.format.authorName}</Card.Subtitle></Link>}
           <Card.Text>{this.props.format.description}</Card.Text>
           <div className="d-flex justify-content-between mt-auto align-items-center">
             {this.props.removeFormat && <Card.Link as={Link} to={ROUTES.format + "/" + this.props.format.id}>Edit Format</Card.Link>}

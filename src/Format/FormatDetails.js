@@ -20,11 +20,7 @@ class FormatDetails extends Component {
     this.props.firebase.getFormatMetadata(this.props.match.params.formatId)
     .then(formatDoc => {
       if (formatDoc.exists) {
-        this.setState({formatData: formatDoc.data()});
-        this.props.firebase.getUserInfo(formatDoc.data().author)
-        .then(userInfo => {
-          this.setState({isLoading: false, authorName: userInfo.displayName});
-        });
+        this.setState({formatData: formatDoc.data(), isLoading: false});
       }
     });
   }
@@ -47,7 +43,7 @@ class FormatDetails extends Component {
           <h1>{this.state.formatData.name}</h1>
           
         </Row>
-        {this.state.authorName && <Row><Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.authorName}</h4></Link></Row>}
+        {this.state.formatData.authorName && <Row><Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.formatData.authorName}</h4></Link></Row>}
         <hr />
         <Row>{description}</Row>
         <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>        

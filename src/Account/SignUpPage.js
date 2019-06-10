@@ -132,7 +132,7 @@ class SignUpForm extends Component {
         </Form.Group>
         <Form.Group>
           <Form.Label>Enter Display Name</Form.Label>
-          <Form.Control required value={this.state.displayName} onChange={event => this.onFormChange(event, "displayName")} placeholder="Enter display name" />
+          <Form.Control required value={this.state.displayName} onChange={event => this.onFormChange(event, "displayName")} placeholder="Enter display name" maxLength={25} />
           <Form.Control.Feedback type="invalid">Please enter a display name</Form.Control.Feedback>
         </Form.Group>
         <Form.Group>
