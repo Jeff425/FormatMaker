@@ -14,6 +14,7 @@ import EmailVerify from './Account/EmailVerify';
 import FormatSelector from './Format/FormatSelector';
 import OwnFormatSelector from './Format/OwnFormatSelector';
 import UserFormatSelector from './Format/UserFormatSelector';
+import FavoriteFormats from './Format/FavoriteFormats';
 import HowToUse from './HowToUse';
 import Changelog from './Changelog';
 import AccountInfo from './Account/AccountInfo';
@@ -59,6 +60,7 @@ class App extends Component {
             <Route path={ROUTES.changelog} component={Changelog} />
             <Route path={ROUTES.accountinfo} component={AccountInfo} />
             <Route path={ROUTES.userformat + "/:userId"} component={UserFormatSelector} />
+            <Route path={ROUTES.favorites} component={FavoriteFormats} />
           </div>
           <Footer />
         </div>

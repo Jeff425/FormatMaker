@@ -6,6 +6,7 @@ const ROUTES = {
   signup: "/signup",
   ownformat: "/ownformats",
   userformat: "/userformats",
+  favorites: "/favorites",
   howto: "/howto",
   passwordforget: "/passwordforget",
   passwordchange: "/passwordchange",

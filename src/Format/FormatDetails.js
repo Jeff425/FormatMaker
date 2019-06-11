@@ -12,7 +12,7 @@ class FormatDetails extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {isLoading: true, temporaryFavorite: 0, authUser: null, sendingFavorite: false};
+    this.state = {isLoading: true, temporaryFavorite: 0, authUser: null, sendingFavorite: false, newFavorite: null};
     this.favoriteFormat = this.favoriteFormat.bind(this);
   }
   
@@ -42,7 +42,7 @@ class FormatDetails extends Component {
     this.props.firebase.toggleFavoriteFormat(this.props.match.params.formatId).then(result => {
       let currentTemp = this.state.temporaryFavorite;
       currentTemp += result.data.isFavorite ? 1 : -1;
-      this.setState({temporaryFavorite: currentTemp, sendingFavorite: false});
+      this.setState({temporaryFavorite: currentTemp, sendingFavorite: false, newFavorite: result.data.isFavorite});
     });
   }
   
@@ -59,6 +59,12 @@ class FormatDetails extends Component {
       description = <ReactMarkdown source={this.state.formatData.longDescription} linkTarget="_blank" />;
     }
     const favoriteCount = (this.state.formatData.favorites ? this.state.formatData.favorites.length : 0) + this.state.temporaryFavorite;
+    let favorite = false;
+    if (this.state.newFavorite !== null) {
+      favorite = this.state.newFavorite;
+    } else if (this.state.authUser && this.state.formatData.favorites) {  
+      favorite = this.state.formatData.favorites.includes(this.state.authUser.uid);
+    }
     return (
       <Container className="marginTop30px">
         <Row>
@@ -68,7 +74,7 @@ class FormatDetails extends Component {
         <Row className="d-flex">
           {this.state.formatData.authorName && <Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.formatData.authorName}</h4></Link>}
           <div className="d-flex flex-column ml-auto">
-            {this.state.authUser && <Button variant="primary" onClick={this.favoriteFormat} disabled={this.state.sendingFavorite}>Favorite Format</Button>}
+            {this.state.authUser && <Button variant="primary" onClick={this.favoriteFormat} disabled={this.state.sendingFavorite}>{favorite ? "Remove Favorite" : "Favorite Format"}</Button>}
             {!this.state.authUser && <Link to={ROUTES.signin + ROUTES.formatdetails +  encodeURIComponent("/") + this.props.match.params.formatId}><Button variant="primary">Sign in to Favorite</Button></Link>}
             <div className="text-muted text-center">{favoriteCount} have favorited</div>
           </div>

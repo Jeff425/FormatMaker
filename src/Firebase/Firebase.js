@@ -32,7 +32,9 @@ class Firebase {
     this.readFormat = this.readFormat.bind(this);
     this.getFormatMetadata = this.getFormatMetadata.bind(this);
     this.queryFormats = this.queryFormats.bind(this);
-    this.getSponsoredFormats = this.getSponsoredFormats.bind(this);
+    this.querySponsoredFormats = this.querySponsoredFormats.bind(this);
+    this.queryNewestFormats = this.queryNewestFormats.bind(this);
+    this.queryMostFavoritedFormats = this.queryMostFavoritedFormats.bind(this);
     this.queryFavoriteFormats = this.queryFavoriteFormats.bind(this);
     this.toggleFavoriteFormat = this.toggleFavoriteFormat.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
@@ -178,16 +180,24 @@ class Firebase {
     if (authUser) {
       return this.db.collection("formats").where("author", "==", authUser.uid).orderBy("lastUpdate", "desc").get();
     }
-    return this.db.collection("formats").where("author", "==", "ii4m8G6M6nOtR7PScINVEK7mV6R2").orderBy("lastUpdate", "desc").limit(25).get();
+    return this.db.collection("formats").orderBy("lastUpdate", "desc").limit(25).get();
   }
   
-  getSponsoredFormats() {
-    return this.db.collection("formats").doc("szCpUyqs9DSXN5SbSelk").get();
+  queryNewestFormats() {
+    return this.db.collection("formats").orderBy("createDate", "desc").limit(25).get();
+  }
+  
+  queryMostFavoritedFormats() {
+    return this.db.collection("formats").orderBy("favoriteCount", "desc").limit(25).get();
+  }
+  
+  querySponsoredFormats() {
+    return this.db.collection("formats").where("sponsored", "==", true).orderBy("lastUpdate", "desc").get();
   }
   
   queryFavoriteFormats() {
     const uid = this.auth.currentUser.uid;
-    return this.db.collection("formats").where("favorites", "array-contains", uid).get();
+    return this.db.collection("formats").where("favorites", "array-contains", uid).orderBy("lastUpdate", "desc").get();
   }
   
   toggleFavoriteFormat(firebaseId) {

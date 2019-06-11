@@ -39,6 +39,9 @@ class NavigationBar extends Component {
           </Nav>
           <Nav className="ml-auto">
             {this.props.authUser &&
+              <Nav.Link as={NavLink} to={ROUTES.favorites} onClick={this.onNavigation}>Favorites</Nav.Link>
+            }
+            {this.props.authUser &&
               <Nav.Link as={NavLink} to={ROUTES.ownformat} onClick={this.onNavigation}>Your Formats</Nav.Link>
             }
             {this.props.authUser &&

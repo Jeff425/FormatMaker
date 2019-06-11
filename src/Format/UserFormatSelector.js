@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import ReactGA from 'react-ga';
-import { withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
 import FormatCard from './FormatCard';
@@ -53,4 +52,4 @@ class UserFormatSelector extends Component {
   }
 };
 
-export default withFirebase(withRouter(UserFormatSelector));
+export default withFirebase(UserFormatSelector);

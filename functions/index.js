@@ -37,7 +37,7 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
             transaction.delete(admin.firestore().collection("names").doc(userInfoDoc.data().displayName.toUpperCase()));
           }
           return {success: true};
-        });    
+        });
       });
     });
   });
@@ -63,11 +63,12 @@ exports.toggleFavoriteFormat = functions.https.onCall((data, context) => {
       const removedFavorite = favorites.filter(favorite => favorite !== uid);
       if (removedFavorite.length < favorites.length) {
         // Removing user from list of favorites
-        transaction.update(formatRef, {favorites: removedFavorite});
+        transaction.update(formatRef, {favorites: removedFavorite, favoriteCount: removedFavorite.length});
         return {isFavorite: false};
       } else {
         // Add user to list of favorites
-        transaction.update(formatRef, {favorites: favorites.concat(uid)});
+        const newFavorites = favorites.concat(uid);
+        transaction.update(formatRef, {favorites: newFavorites, favoriteCount: newFavorites.length});
         return {isFavorite: true};
       }
     });
