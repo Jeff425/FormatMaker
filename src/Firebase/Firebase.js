@@ -33,6 +33,8 @@ class Firebase {
     this.getFormatMetadata = this.getFormatMetadata.bind(this);
     this.queryFormats = this.queryFormats.bind(this);
     this.getSponsoredFormats = this.getSponsoredFormats.bind(this);
+    this.queryFavoriteFormats = this.queryFavoriteFormats.bind(this);
+    this.toggleFavoriteFormat = this.toggleFavoriteFormat.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
     this.cleanUpDB = this.cleanUpDB.bind(this);
   }
@@ -110,8 +112,8 @@ class Firebase {
       longDesc = "";
     }
     (firebaseId ?
-      this.db.collection("formats").doc(firebaseId).set({name: name, description: desc, longDescription: longDesc, author: authUser.uid, lastUpdate: app.firestore.Timestamp.now()}) :
-      this.db.collection("formats").add({name: name, description: desc, longDescription: longDesc, author: authUser.uid, lastUpdate: app.firestore.Timestamp.now()}))
+      this.db.collection("formats").doc(firebaseId).update({name: name, description: desc, longDescription: longDesc, author: authUser.uid}) :
+      this.db.collection("formats").add({name: name, description: desc, longDescription: longDesc, author: authUser.uid}))
       .then(docRef => {
         const formatRef = this.storage.ref().child("format/" + authUser.uid + "/" + (firebaseId ? firebaseId : docRef.id) + ".format");
         formatRef.putString(formatString)
@@ -181,6 +183,16 @@ class Firebase {
   
   getSponsoredFormats() {
     return this.db.collection("formats").doc("szCpUyqs9DSXN5SbSelk").get();
+  }
+  
+  queryFavoriteFormats() {
+    const uid = this.auth.currentUser.uid;
+    return this.db.collection("formats").where("favorites", "array-contains", uid).get();
+  }
+  
+  toggleFavoriteFormat(firebaseId) {
+    const toggleCallable = this.functions.httpsCallable("toggleFavoriteFormat");
+    return toggleCallable({formatId: firebaseId});
   }
   
   deleteFormat(authUser, formatId, successFunc, errorFunc) {

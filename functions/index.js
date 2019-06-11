@@ -43,6 +43,37 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
   });
 });
 
+exports.toggleFavoriteFormat = functions.https.onCall((data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("failed-precondition", "The function must be called while authenticated.");
+  }
+  if (!data.formatId) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing formatId");
+  }
+  const formatId = data.formatId;
+  const formatRef = admin.firestore().collection("formats").doc(formatId);
+  const uid = context.auth.uid;
+  return admin.firestore().runTransaction(transaction => {
+    return transaction.get(formatRef)
+    .then(format => {
+      let favorites = [];
+      if (format.data().favorites) {
+        favorites = format.data().favorites;
+      }
+      const removedFavorite = favorites.filter(favorite => favorite !== uid);
+      if (removedFavorite.length < favorites.length) {
+        // Removing user from list of favorites
+        transaction.update(formatRef, {favorites: removedFavorite});
+        return {isFavorite: false};
+      } else {
+        // Add user to list of favorites
+        transaction.update(formatRef, {favorites: favorites.concat(uid)});
+        return {isFavorite: true};
+      }
+    });
+  });  
+});
+
 exports.writeFormatInfo = functions.firestore.document("formats/{formatId}").onCreate((snap, context) => {
   const createStamp = admin.firestore.Timestamp.now();
   let authName = "";
@@ -51,19 +82,36 @@ exports.writeFormatInfo = functions.firestore.document("formats/{formatId}").onC
     if (authInfo.exists) {
       authName = authInfo.data().displayName;
     }
-    return snap.ref.set({authorName: authName, createDate: createStamp, lastUpdate: createStamp}, {merge: true});
+    return snap.ref.set({authorName: authName, createDate: createStamp, lastUpdate: createStamp, favorites: []}, {merge: true});
   });
 });
 
+// Adds timestamps
 exports.updateFormatInfo = functions.firestore.document("formats/{formatId}").onUpdate((change, context) => {
+  let oldFavorites = [];
+  let newFavorites = [];
+  if (change.before.data().favorites) {
+    oldFavorites = change.before.data().favorites;
+  }
+  if (change.after.data().favorites) {
+    newFavorites = change.after.data().favorites;
+  }
+  if (oldFavorites.length !== newFavorites.length) {
+    console.log("favorites changed");
+    return null;
+  }
+  if (change.before.data().authorName !== change.after.data().authorName) {
+    console.log("authorName changed");
+    return null;
+  }
+  if (!change.before.data().lastUpdate.isEqual(change.after.data().lastUpdate)) {
+    console.log("lastUpdate changed");
+    return null;
+  }
   const updateStamp = admin.firestore.Timestamp.now();
   let createStamp = updateStamp;
   if (change.before.data().createDate) {
     createStamp = change.before.data().createDate;
   }
-  let authName = change.before.data().authorName;
-  if (!authName) {
-    authName = "";
-  }
-  return change.after.ref.set({authorName: authName, createDate: createStamp, lastUpdate: updateStamp}, {merge: true});
+  return change.after.ref.update({createDate: createStamp, lastUpdate: updateStamp});
 });

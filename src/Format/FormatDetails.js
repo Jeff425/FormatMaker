@@ -12,7 +12,8 @@ class FormatDetails extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {isLoading: true};
+    this.state = {isLoading: true, temporaryFavorite: 0, authUser: null, sendingFavorite: false};
+    this.favoriteFormat = this.favoriteFormat.bind(this);
   }
   
   componentDidMount() {
@@ -22,6 +23,26 @@ class FormatDetails extends Component {
       if (formatDoc.exists) {
         this.setState({formatData: formatDoc.data(), isLoading: false});
       }
+    });
+    this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
+      if (auth) {
+        if (auth.emailVerified) {
+          this.setState({authUser: auth});
+        }
+      }
+    });
+  }
+  
+  componentWillUnmount() {
+    this.listener();
+  }
+  
+  favoriteFormat() {
+    this.setState({sendingFavorite: true});
+    this.props.firebase.toggleFavoriteFormat(this.props.match.params.formatId).then(result => {
+      let currentTemp = this.state.temporaryFavorite;
+      currentTemp += result.data.isFavorite ? 1 : -1;
+      this.setState({temporaryFavorite: currentTemp, sendingFavorite: false});
     });
   }
   
@@ -37,13 +58,21 @@ class FormatDetails extends Component {
     if (this.state.formatData.longDescription) {
       description = <ReactMarkdown source={this.state.formatData.longDescription} linkTarget="_blank" />;
     }
+    const favoriteCount = (this.state.formatData.favorites ? this.state.formatData.favorites.length : 0) + this.state.temporaryFavorite;
     return (
       <Container className="marginTop30px">
         <Row>
           <h1>{this.state.formatData.name}</h1>
           
         </Row>
-        {this.state.formatData.authorName && <Row><Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.formatData.authorName}</h4></Link></Row>}
+        <Row className="d-flex">
+          {this.state.formatData.authorName && <Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.formatData.authorName}</h4></Link>}
+          <div className="d-flex flex-column ml-auto">
+            {this.state.authUser && <Button variant="primary" onClick={this.favoriteFormat} disabled={this.state.sendingFavorite}>Favorite Format</Button>}
+            {!this.state.authUser && <Link to={ROUTES.signin + ROUTES.formatdetails +  encodeURIComponent("/") + this.props.match.params.formatId}><Button variant="primary">Sign in to Favorite</Button></Link>}
+            <div className="text-muted text-center">{favoriteCount} have favorited</div>
+          </div>
+        </Row>
         <hr />
         <Row>{description}</Row>
         <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>        
@@ -52,5 +81,4 @@ class FormatDetails extends Component {
   }
 }
 //<Button variant="danger" className="ml-auto maxHeightFit">Report Format</Button>
-
 export default withFirebase(withRouter(FormatDetails));
