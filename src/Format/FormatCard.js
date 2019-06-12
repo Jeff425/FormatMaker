@@ -19,6 +19,9 @@ class FormatCard extends Component {
             <Card.Link as={Link} to={ROUTES.deck + "/" + this.props.format.id} onClick={event=> window.scrollTo(0, 0)}>Make Deck</Card.Link>     
             {this.props.removeFormat && <Button variant="danger" className="ml-4" onClick={event => this.props.removeFormat(this.props.format.id)}><FontAwesomeIcon icon="times" className="fa-w-16" /></Button>}
           </div>
+          {this.props.removeFormat && <div className="d-flex justify-content-between align-items-center">
+            <Card.Link as={Link} to={ROUTES.formatdetails + "/" + this.props.format.id} onClick={event=> window.scrollTo(0, 0)}>View Format Info</Card.Link>
+          </div>}
         </Card.Body> 
       </Card>
     );
