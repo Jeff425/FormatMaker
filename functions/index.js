@@ -116,3 +116,37 @@ exports.updateFormatInfo = functions.firestore.document("formats/{formatId}").on
   }
   return change.after.ref.update({createDate: createStamp, lastUpdate: updateStamp});
 });
+
+const checkAdmin = context => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError("failed-precondition", "The function must be called while authenticated.");
+  }
+  return admin.firestore().collection("users").doc(context.auth.uid).get()
+  .then(userInfo => {
+    if (!userInfo.data().admin) {
+      throw new functions.https.HttpsError("failed-precondition", "The function must be called as an admin");
+    }
+    return null;
+  });
+};
+
+// Can also ban user
+exports.deleteFormat = functions.https.onCall((data, context) => {
+  if (!data.reportId || !data.formatId) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing Arguments");
+  }
+  return checkAdmin(context).then(() => {
+    return admin.firestore().collection("formats").doc(data.formatId).get().then(format => {
+      const author = format.data().author;
+      return admin.firestore().collection("formats").doc(data.formatId).delete().then(() => {
+        return admin.storage().bucket().file("format/" + author + "/" + data.formatId + ".format").delete().then(() => {
+          const reportRef = admin.firestore().collection("formatReports").doc(data.reportId);
+          if (data.banUser === true) {
+            return admin.firestore().collection("users").doc(author).update({banned: true}).then(() => reportRef.delete());
+          }
+          return reportRef.delete();
+        });
+      });
+    });  
+  });
+});

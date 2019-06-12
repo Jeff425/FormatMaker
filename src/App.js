@@ -18,7 +18,7 @@ import FavoriteFormats from './Format/FavoriteFormats';
 import HowToUse from './HowToUse';
 import Changelog from './Changelog';
 import AccountInfo from './Account/AccountInfo';
-import { withFirebase } from './Firebase/FirebaseContext';
+import Reports from './Admin/Reports';
 import ROUTES from './ROUTES';
 import Footer from './Footer';
 
@@ -29,21 +29,11 @@ class App extends Component {
     this.state = {authUser: null};
   }
   
-  componentDidMount() {
-    this.listener = this.props.firebase.auth.onAuthStateChanged(authUser => {
-      authUser ? this.setState({authUser: authUser}) : this.setState({authUser: null});
-    });
-  }
-  
-  componentWillUnmount() {
-    this.listener();
-  }
-  
   render() {
     return (
       <Router>
         <div className="viewport">
-          <NavigationBar authUser={this.state.authUser} />
+          <NavigationBar />
           <div className="content">
             <Route exact={true} path="/" component={MainPage} />
             <Route path={ROUTES.formatdetails + "/:formatId"} component={FormatDetails} />
@@ -61,6 +51,7 @@ class App extends Component {
             <Route path={ROUTES.accountinfo} component={AccountInfo} />
             <Route path={ROUTES.userformat + "/:userId"} component={UserFormatSelector} />
             <Route path={ROUTES.favorites} component={FavoriteFormats} />
+            <Route path={ROUTES.reports} component={Reports} />
           </div>
           <Footer />
         </div>
@@ -69,4 +60,4 @@ class App extends Component {
   }
 }
 
-export default withFirebase(App);
+export default App;

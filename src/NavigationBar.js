@@ -10,9 +10,27 @@ class NavigationBar extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {expanded: false};
+    this.state = {expanded: false, authUser: null, isAdmin: false};
     this.onNavigation = this.onNavigation.bind(this);
     this.onSignOut = this.onSignOut.bind(this);
+  }
+  
+  componentDidMount() {
+    this.listener = this.props.firebase.auth.onAuthStateChanged(authUser => {
+      if (authUser) {
+        this.setState({authUser: authUser});
+        this.props.firebase.getUserInfo(authUser.uid)
+        .then(userInfo => {
+          if (userInfo.admin === true) {
+            this.setState({isAdmin: true});
+          }
+        });
+      }
+    });
+  }
+  
+  componentWillUnmount() {
+    this.listener();
   }
   
   onNavigation() {
@@ -38,19 +56,22 @@ class NavigationBar extends Component {
             <Nav.Link as={NavLink} to={ROUTES.changelog} onClick={this.onNavigation}>Changelog</Nav.Link>
           </Nav>
           <Nav className="ml-auto">
-            {this.props.authUser &&
+            {this.state.isAdmin &&
+              <Nav.Link as={NavLink} to={ROUTES.reports} onClick={this.onNavigation}>Reports</Nav.Link>
+            }
+            {this.state.authUser &&
               <Nav.Link as={NavLink} to={ROUTES.favorites} onClick={this.onNavigation}>Favorites</Nav.Link>
             }
-            {this.props.authUser &&
+            {this.state.authUser &&
               <Nav.Link as={NavLink} to={ROUTES.ownformat} onClick={this.onNavigation}>Your Formats</Nav.Link>
             }
-            {this.props.authUser &&
+            {this.state.authUser &&
               <Nav.Link as={NavLink} to={ROUTES.accountinfo} onClick={this.onNavigation}>Account</Nav.Link>
             }
-            {this.props.authUser &&
+            {this.state.authUser &&
               <Button variant="link" className="nav-link border-0" onClick={this.onSignOut}>Sign Out</Button>        
             }
-            {!this.props.authUser && <Nav.Link as={NavLink} to={ROUTES.signin} onClick={this.onNavigation}>Sign In</Nav.Link>}
+            {!this.state.authUser && <Nav.Link as={NavLink} to={ROUTES.signin} onClick={this.onNavigation}>Sign In</Nav.Link>}
           </Nav>
         </Navbar.Collapse>
       </Navbar>

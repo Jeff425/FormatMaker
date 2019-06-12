@@ -38,6 +38,10 @@ class Firebase {
     this.queryFavoriteFormats = this.queryFavoriteFormats.bind(this);
     this.toggleFavoriteFormat = this.toggleFavoriteFormat.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
+    this.reportFormat = this.reportFormat.bind(this);
+    this.queryFormatReports = this.queryFormatReports.bind(this);
+    this.ignoreReport = this.ignoreReport.bind(this);
+    this.deleteFormatAdmin = this.deleteFormatAdmin.bind(this);
     this.cleanUpDB = this.cleanUpDB.bind(this);
   }
   
@@ -212,6 +216,26 @@ class Firebase {
     .catch(error => {
       this.cleanUpDB(formatId, successFunc, errorFunc);
     });
+  }
+  
+  reportFormat(firebaseId, description) {
+    return this.db.collection("formatReports").add({formatId: firebaseId, description: description, date: app.firestore.Timestamp.now(), unread: true});
+  }
+  
+  queryFormatReports(unreadOnly) {
+    if (unreadOnly) {
+      return this.db.collection("formatReports").where("unread", "==", true).orderBy("date", "desc").get();
+    }
+    return this.db.collection("formatReports").orderBy("date", "desc").get();
+  }
+  
+  ignoreReport(reportId) {
+    return this.db.collection("formatReports").doc(reportId).update({unread: false});
+  }
+  
+  deleteFormatAdmin(reportId, formatId, banUser) {
+    const deleteFormatAdminCallable = this.functions.httpsCallable("deleteFormat");
+    return deleteFormatAdminCallable({reportId: reportId, formatId: formatId, banUser: banUser});
   }
   
   cleanUpDB(formatId, successFunc, errorFunc) {

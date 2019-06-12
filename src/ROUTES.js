@@ -12,7 +12,8 @@ const ROUTES = {
   passwordchange: "/passwordchange",
   emailverify: "/emailverify",
   changelog: "/changelog",
-  accountinfo: "/accountinfo"
+  accountinfo: "/accountinfo",
+  reports: "/reports"
 };
 
 export default ROUTES;
