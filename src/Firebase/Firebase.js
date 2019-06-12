@@ -42,6 +42,13 @@ class Firebase {
     this.queryFormatReports = this.queryFormatReports.bind(this);
     this.ignoreReport = this.ignoreReport.bind(this);
     this.deleteFormatAdmin = this.deleteFormatAdmin.bind(this);
+    this.writeComment = this.writeComment.bind(this);
+    this.deleteComment = this.deleteComment.bind(this);
+    this.queryComments = this.queryComments.bind(this);
+    this.reportComment = this.reportComment.bind(this);
+    this.queryCommentReports = this.queryCommentReports.bind(this);
+    this.ignoreCommentReport = this.ignoreCommentReport.bind(this);
+    this.deleteCommentAdmin = this.deleteCommentAdmin.bind(this);
     this.cleanUpDB = this.cleanUpDB.bind(this);
   }
   
@@ -236,6 +243,42 @@ class Firebase {
   deleteFormatAdmin(reportId, formatId, banUser) {
     const deleteFormatAdminCallable = this.functions.httpsCallable("deleteFormat");
     return deleteFormatAdminCallable({reportId: reportId, formatId: formatId, banUser: banUser});
+  }
+  
+  // Can edit comment
+  writeComment(formatId, author, authorName, text, commentId = null) {
+    if (commentId) {
+      return this.db.collection("formats/" + formatId + "/comments").doc(commentId).update({authorName: authorName, text: text, edited: true});
+    }
+    return this.db.collection("formats/" + formatId + "/comments").add({author: author, authorName: authorName, text: text, edited: false});
+  }
+  
+  deleteComment(formatId, commentId) {
+    return this.db.collection("formats/" + formatId + "/comments").doc(commentId).delete();
+  }
+  
+  queryComments(formatId) {
+    return this.db.collection("formats/" + formatId + "/comments").orderBy("date", "desc").get();
+  }
+  
+  reportComment(formatId, commentId, comment, description) {
+    return this.db.collection("commentReports").add({formatId: formatId, commentId: commentId, comment: comment, description: description, date: app.firestore.Timestamp.now(), unread: true});
+  }
+  
+  queryCommentReports(unreadOnly) {
+    if (unreadOnly) {
+      return this.db.collection("commentReports").where("unread", "==", true).orderBy("date", "desc").get();
+    }
+    return this.db.collection("commentReports").orderBy("date", "desc").get();
+  }
+  
+  ignoreCommentReport(reportId) {
+    return this.db.collection("commentReports").doc(reportId).update({unread: false});
+  }
+  
+  deleteCommentAdmin(reportId, formatId, commentId, banUser) {
+    const deleteFormatAdminCallable = this.functions.httpsCallable("deleteComment");
+    return deleteFormatAdminCallable({reportId: reportId, formatId: formatId, commentId: commentId, banUser: banUser});
   }
   
   cleanUpDB(formatId, successFunc, errorFunc) {

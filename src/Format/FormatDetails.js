@@ -11,14 +11,19 @@ import { Link, withRouter } from 'react-router-dom';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ReactMarkdown from 'react-markdown';
 import ROUTES from './../ROUTES';
+import CommentBox from './CommentBox';
 
 class FormatDetails extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {formatData: null, isLoading: true, temporaryFavorite: 0, authUser: null, sendingFavorite: false, newFavorite: null, showReportForm: false, reportReason: "", disableReport: false, reportFeedback: ""};
+    this.state = {formatData: null, isLoading: true, commentsLoading: true, comments: [], displayName: "", commentMessage: "", disablePostComment: false, temporaryFavorite: 0, authUser: null, sendingFavorite: false, newFavorite: null, showReportForm: false, reportReason: "", disableReport: false, reportFeedback: ""};
+    this.loadComments = this.loadComments.bind(this);
+    this.writeComment = this.writeComment.bind(this);
+    this.deleteComment = this.deleteComment.bind(this);
     this.favoriteFormat = this.favoriteFormat.bind(this);
     this.sendReport = this.sendReport.bind(this);
+    this.sendCommentReport = this.sendCommentReport.bind(this);
   }
   
   componentDidMount() {
@@ -33,13 +38,54 @@ class FormatDetails extends Component {
       if (auth) {
         if (auth.emailVerified) {
           this.setState({authUser: auth});
+          this.props.firebase.getUserInfo(auth.uid)
+          .then(userInfo => {
+            if (userInfo.displayName) {
+              this.setState({displayName: userInfo.displayName});
+            }
+          });
         }
       }
     });
+    this.loadComments();
   }
   
   componentWillUnmount() {
     this.listener();
+  }
+  
+  loadComments() {
+    return this.props.firebase.queryComments(this.props.match.params.formatId)
+    .then(result => result.docs)
+    .then(commentQuery => {
+      const comments = commentQuery.filter(doc => doc.exists).map(doc => {
+        const comment = {...doc.data()};
+        comment.id = doc.id;
+        return comment;
+      });
+      this.setState({commentsLoading: false, comments: comments});
+    });
+  }
+  
+  writeComment(text, commentId = null) {
+    this.setState({disablePostComment: true});
+    return new Promise((resolve, reject) => {
+      this.props.firebase.writeComment(this.props.match.params.formatId, this.state.authUser.uid, this.state.displayName, text, commentId)
+      .then(() => {
+        // Have to wait a second for the value to be in the collection
+        setTimeout(() => this.loadComments().then(() => {
+          this.setState({disablePostComment: false, commentMessage: ""});
+          resolve();
+        }).catch(reject), 3000);
+      }).catch(reject);
+    });
+  }
+  
+  deleteComment(commentId) {
+    this.props.firebase.deleteComment(this.props.match.params.formatId, commentId)
+    .then(() => {
+      this.loadComments();
+    });
   }
   
   favoriteFormat() {
@@ -60,6 +106,10 @@ class FormatDetails extends Component {
     .catch(() => {
       this.setState({reportFeedback: "Error Sending Report"});
     });
+  }
+  
+  sendCommentReport(commentId, comment, description) {
+    return this.props.firebase.reportComment(this.props.match.params.formatId, commentId, comment, description);
   }
   
   render() {
@@ -101,6 +151,26 @@ class FormatDetails extends Component {
         <hr />
         <Row>{description}</Row>
         <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>
+        
+        {!this.state.commentsLoading && <Row className="mt-5">
+          <div className="fullWidth">
+            <h3>Comments <small className="text-muted">{this.state.comments.length} comments</small></h3>
+            <hr />
+          </div>
+          {this.state.displayName && <div className="fullWidth">
+            <FormGroup className="mb-1">
+              <FormLabel>Enter Message as: {this.state.displayName}</FormLabel>
+              <FormControl placeholder="Enter Message" value={this.state.commentMessage} onChange={event => this.setState({commentMessage: event.target.value})} as="textarea" rows="3" maxLength={250} />
+            </FormGroup>
+            <Button variant="success" disabled={this.state.disablePostComment} onClick={event => this.writeComment(this.state.commentMessage)}>Post Comment</Button>
+          </div>}
+          <div className="fullWidth">
+            {this.state.comments.map(comment => (
+              <CommentBox key={comment.id} comment={comment} isOwner={this.state.authUser && comment.author === this.state.authUser.uid} onEdit={this.writeComment} onDelete={this.deleteComment} onReport={this.sendCommentReport} />
+            ))}
+          </div>
+        </Row>}
+        
         <Modal show={this.state.showReportForm} onHide={event => this.setState({showReportForm: false})}>
           <Modal.Header closeButton>
             <Modal.Title>Report {this.state.formatData.name}</Modal.Title>

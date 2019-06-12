@@ -9,8 +9,11 @@ class Reports extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {isLoading: true, formatReports: []}
+    this.state = {isLoading: true, formatReports: [], isLoadingComments: true, commentReports: []}
     this.ignoreReport = this.ignoreReport.bind(this);
+    this.deleteFormat = this.deleteFormat.bind(this);
+    this.ignoreCommentReport = this.ignoreCommentReport.bind(this);
+    this.deleteComment = this.deleteComment.bind(this);
   }
   
   componentDidMount() {
@@ -25,6 +28,16 @@ class Reports extends Component {
             return report;
           });
           this.setState({isLoading: false, formatReports: reports});
+        });
+        this.props.firebase.queryCommentReports(true)
+        .then(result => result.docs)
+        .then(reportQuery => {
+          const reports = reportQuery.filter(doc => doc.exists).map(doc => {
+            const report = {...doc.data()};
+            report.id = doc.id;
+            return report;
+          });
+          this.setState({isLoading: false, commentReports: reports});
         });
       }
     });
@@ -42,6 +55,16 @@ class Reports extends Component {
   deleteFormat(reportId, formatId, banUser) {
     this.setState({formatReports: this.state.formatReports.filter(report => report.id !== reportId)});
     this.props.firebase.deleteFormatAdmin(reportId, formatId, banUser);
+  }
+  
+  ignoreCommentReport(reportId) {
+    this.setState({commentReports: this.state.commentReports.filter(report => report.id !== reportId)});
+    this.props.firebase.ignoreCommentReport(reportId);
+  }
+  
+  deleteComment(reportId, formatId, commentId, banUser) {
+    this.setState({commentReports: this.state.commentReports.filter(report => report.id !== reportId)});
+    this.props.firebase.deleteCommentAdmin(reportId, formatId, commentId, banUser);
   }
   
   render() {
@@ -64,6 +87,23 @@ class Reports extends Component {
                 <Button variant="link" onClick={event => this.ignoreReport(report.id)}>Ignore Report</Button>
                 <Button variant="link" onClick={event => this.deleteFormat(report.id, report.formatId, false)}>Delete Format</Button>
                 <Button variant="link" onClick={event => this.deleteFormat(report.id, report.formatId, true)}>Ban User</Button>
+              </div>
+            </Card.Body>
+          </Card>
+        ))}
+        </div>
+        <div className="d-flex flex-row flex-wrap">
+        {this.state.commentReports.map(report => (
+          <Card key={report.id} className="reportCard ml-3 mr-3 mt-3">
+            <Card.Body className="d-flex flex-column">
+              <Link to={ROUTES.formatdetails + "/" + report.formatId} target="_blank"><Card.Title>Format {report.formatId}</Card.Title></Link>
+              <Card.Text>{report.description}</Card.Text>
+              <div className="text-muted">Comment:</div>
+              <div>{report.comment}</div>
+              <div className="d-flex justify-content-between mt-auto align-items-center">
+                <Button variant="link" onClick={event => this.ignoreCommentReport(report.id)}>Ignore Report</Button>
+                <Button variant="link" onClick={event => this.deleteComment(report.id, report.formatId, report.commentId, false)}>Delete Comment</Button>
+                <Button variant="link" onClick={event => this.deleteComment(report.id, report.formatId, report.commentId, true)}>Ban User</Button>
               </div>
             </Card.Body>
           </Card>

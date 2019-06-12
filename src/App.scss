@@ -178,6 +178,16 @@ footer {
 .reportCard {
   width: 25rem;
   height: 20rem;
+  max-height: 50rem;
+}
+
+.commentCard{
+  width: 100%;
+  max-height: 15rem;
+  
+  .topRight {
+    min-width: 10rem;
+  }
 }
 
 .cardContainer {

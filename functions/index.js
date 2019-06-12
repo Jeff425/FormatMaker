@@ -16,6 +16,7 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
   const nameDocRef = admin.firestore().collection("names").doc(newName.toUpperCase());
   const userInfoDocRef = admin.firestore().collection("users").doc(context.auth.uid);
   const formatQueryRef = admin.firestore().collection("formats").where("author", "==", context.auth.uid);
+  const commentQueryRef = admin.firestore().collectionGroup("comments").where("author", "==", context.auth.uid);
   
   return admin.firestore().runTransaction(transaction => {
     
@@ -29,14 +30,20 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
         return transaction.get(formatQueryRef)
         .then(result => result.docs)
         .then(formatQuery => {
-          formatQuery.forEach(doc => {
-            transaction.set(admin.firestore().collection("formats").doc(doc.id), {authorName: newName}, {merge: true});
+          return transaction.get(commentQueryRef)
+          .then(commentQuery => {
+            commentQuery.forEach(doc => {
+              transaction.update(doc.ref, {authorName: newName});
+            });
+            formatQuery.forEach(doc => {
+              transaction.update(doc.ref, {authorName: newName});
+            });
+            transaction.set(nameDocRef, {ownedBy: context.auth.uid}).update(userInfoDocRef, {displayName: newName});
+            if (userInfoDoc.exists && userInfoDoc.data().displayName) {
+              transaction.delete(admin.firestore().collection("names").doc(userInfoDoc.data().displayName.toUpperCase()));
+            }
+            return {success: true};
           });
-          transaction.set(nameDocRef, {ownedBy: context.auth.uid}).set(userInfoDocRef, {displayName: newName});
-          if (userInfoDoc.exists && userInfoDoc.data().displayName) {
-            transaction.delete(admin.firestore().collection("names").doc(userInfoDoc.data().displayName.toUpperCase()));
-          }
-          return {success: true};
         });
       });
     });
@@ -117,6 +124,24 @@ exports.updateFormatInfo = functions.firestore.document("formats/{formatId}").on
   return change.after.ref.update({createDate: createStamp, lastUpdate: updateStamp});
 });
 
+exports.addTimestampToComment = functions.firestore.document("formats/{formatId}/comments/{commentId}").onCreate((snap, context) => {
+  const createStamp = admin.firestore.Timestamp.now();
+  return snap.ref.update({date: createStamp});
+});
+
+exports.removeAllComments = functions.firestore.document("formats/{formatId}").onDelete((snap, context) => {
+  const commentCollectionId = "formats/" + context.params.formatId + "/comments";
+  return admin.firestore().collection(commentCollectionId).get()
+  .then(query => {
+    const promises = [];
+    query.forEach(docSnap => promises.push(docSnap.ref.delete()));
+    return Promise.all(promises).then(() => {
+      console.log("Deleted all comments for " + context.params.formatId);
+      return null;
+    });
+  });
+});
+
 const checkAdmin = context => {
   if (!context.auth) {
     throw new functions.https.HttpsError("failed-precondition", "The function must be called while authenticated.");
@@ -135,10 +160,12 @@ exports.deleteFormat = functions.https.onCall((data, context) => {
   if (!data.reportId || !data.formatId) {
     throw new functions.https.HttpsError("invalid-argument", "Missing Arguments");
   }
+
   return checkAdmin(context).then(() => {
-    return admin.firestore().collection("formats").doc(data.formatId).get().then(format => {
+    const formatRef = admin.firestore().collection("formats").doc(data.formatId);
+    return formatRef.get().then(format => {
       const author = format.data().author;
-      return admin.firestore().collection("formats").doc(data.formatId).delete().then(() => {
+      return formatRef.delete().then(() => {
         return admin.storage().bucket().file("format/" + author + "/" + data.formatId + ".format").delete().then(() => {
           const reportRef = admin.firestore().collection("formatReports").doc(data.reportId);
           if (data.banUser === true) {
@@ -148,5 +175,25 @@ exports.deleteFormat = functions.https.onCall((data, context) => {
         });
       });
     });  
+  });
+});
+
+// Can also ban user
+exports.deleteComment = functions.https.onCall((data, context) => {
+  if (!data.reportId || !data.formatId || !data.commentId) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing Arguments");
+  }
+  return checkAdmin(context).then(() => {
+    const commentRef = admin.firestore().collection("formats/" + data.formatId + "/comments").doc(data.commentId);
+    return commentRef.get().then(comment => {
+      const author = comment.data().author;
+      return commentRef.delete().then(() => {
+        const reportRef = admin.firestore().collection("commentReports").doc(data.reportId);
+        if (data.banUser === true) {
+          return admin.firestore().collection("users").doc(author).update({banned: true}).then(() => reportRef.delete());
+        }
+        return reportRef.delete();
+      });
+    });
   });
 });
