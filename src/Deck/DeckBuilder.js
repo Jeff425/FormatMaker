@@ -4,6 +4,12 @@ import { saveAs } from 'file-saver';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
+import FormGroup from 'react-bootstrap/FormGroup';
+import FormLabel from 'react-bootstrap/FormLabel';
+import FormControl from 'react-bootstrap/FormControl';
+import FormCheck from 'react-bootstrap/FormCheck';
 import CardSelection from './CardSelection';
 import DeckManager from './DeckManager';
 import { withFirebase } from './../Firebase/FirebaseContext';
@@ -13,10 +19,11 @@ class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0};
+    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
     this.sort = this.sort.bind(this);
     this.addCard = this.addCard.bind(this);
     this.removeCard = this.removeCard.bind(this);
+    this.saveDeckFile = this.saveDeckFile.bind(this);
     this.saveDeck = this.saveDeck.bind(this);
     this.loadDeck = this.loadDeck.bind(this);
     this.onTabChange = this.onTabChange.bind(this);
@@ -131,10 +138,31 @@ class DeckBuilder extends Component {
     return saveString.substring(0, saveString.length - (url ? 2 : 1));
   }
   
-  saveDeck() {
-    const saveString = this.deckString();
+  cockatriceDeckString() {
+    let saveString = "";
+    this.state.deckSelection.forEach(card => {
+      saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
+    });
+    this.state.sideSelection.forEach(card => {
+      saveString += "SB: " + this.state.sideAmount[card.name] + " " + card.name + "\n";
+    });
+    return saveString.substring(0, saveString.length - 1);
+  }
+  
+  // Actually Saves the file
+  saveDeckFile() {
+    if (!this.state.fileName) {
+      return;
+    }
+    const saveString = this.state.fileType === 0 ? this.cockatriceDeckString() : this.deckString();
     const blob = new Blob([saveString], {type: "plain/text"});
-    saveAs(blob, "customDeck" + Date.now() + ".deck");
+    saveAs(blob, this.state.fileName + (this.state.fileType === 0 ? ".txt" : ".deck"));
+    this.setState({showSave: false});
+  }
+  
+  // Shows modal
+  saveDeck() {
+    this.setState({showSave: true});
   }
   
   loadDeck(e) {
@@ -244,6 +272,26 @@ class DeckBuilder extends Component {
               />
             </Col>
           </Row>
+          
+          <Modal show={this.state.showSave} onHide={event => this.setState({showSave: false})}>
+            <Modal.Header closeButton>
+              <Modal.Title>Save Format</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              <FormGroup>
+                <FormLabel>File Name:</FormLabel>
+                <FormControl placeholder="Enter File Name:"  value={this.state.fileName} onChange={event => this.setState({fileName: event.target.value})} />
+              </FormGroup>
+              <FormLabel>File Type:</FormLabel>
+              <div>
+                <FormCheck inline type="radio" label=".txt" checked={this.state.fileType === 0} onChange={event => event.target.checked && this.setState({fileType: 0})} />
+                <FormCheck inline type="radio" label=".deck" checked={this.state.fileType === 1} onChange={event => event.target.checked && this.setState({fileType: 1})} />
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="success" onClick={this.saveDeckFile}>Save Format</Button>
+            </Modal.Footer>
+          </Modal>
         </Container>
       );
     }

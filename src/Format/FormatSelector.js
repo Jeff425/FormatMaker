@@ -48,6 +48,10 @@ class FormatSelector extends Component {
     });
   }
   
+  componentWillUnmount() {
+    this.listener();
+  }
+  
   onDropDownSelect(newSortMethod) {
     const sortFunctions = [this.props.firebase.queryFormats, this.props.firebase.queryNewestFormats, this.props.firebase.queryMostFavoritedFormats];
     this.setState({dropdownDisabled: true});

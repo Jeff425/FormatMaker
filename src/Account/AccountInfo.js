@@ -145,7 +145,7 @@ class AccountInfo extends Component {
         this.setState({authUser: auth});
         
       } else {
-        this.props.history.push(ROUTES.signin + ROUTES.format + encodeURIComponent("/") + (this.props.match.params.formatId ? encodeURIComponent(this.props.match.params.formatId) : ""));
+        this.props.history.push(ROUTES.signin + ROUTES.accountinfo);
         ReactGA.event({category: "Redirection", action: "AccountInfo to sign in page"});
       }
     });

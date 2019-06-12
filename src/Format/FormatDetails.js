@@ -72,11 +72,11 @@ class FormatDetails extends Component {
     return new Promise((resolve, reject) => {
       this.props.firebase.writeComment(this.props.match.params.formatId, this.state.authUser.uid, this.state.displayName, text, commentId)
       .then(() => {
-        // Have to wait a second for the value to be in the collection
+        // Have to wait three second for the value to be in the collection (and it might not be enough!)
         setTimeout(() => this.loadComments().then(() => {
           this.setState({disablePostComment: false, commentMessage: ""});
           resolve();
-        }).catch(reject), 3000);
+        }).catch(reject), 4000);
       }).catch(reject);
     });
   }
@@ -163,6 +163,9 @@ class FormatDetails extends Component {
               <FormControl placeholder="Enter Message" value={this.state.commentMessage} onChange={event => this.setState({commentMessage: event.target.value})} as="textarea" rows="3" maxLength={250} />
             </FormGroup>
             <Button variant="success" disabled={this.state.disablePostComment} onClick={event => this.writeComment(this.state.commentMessage)}>Post Comment</Button>
+          </div>}
+          {!this.state.displayName && <div>
+            <h6>You need to be <Link to={ROUTES.signin + ROUTES.formatdetails + encodeURIComponent("/") + this.props.match.params.formatId}>Signed In</Link>, have your email verified and set your <Link to={ROUTES.accountinfo}>Display Name</Link> in order to comment</h6>
           </div>}
           <div className="fullWidth">
             {this.state.comments.map(comment => (
