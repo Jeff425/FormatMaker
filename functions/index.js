@@ -38,7 +38,7 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
             formatQuery.forEach(doc => {
               transaction.update(doc.ref, {authorName: newName});
             });
-            transaction.set(nameDocRef, {ownedBy: context.auth.uid}).update(userInfoDocRef, {displayName: newName});
+            transaction.set(nameDocRef, {ownedBy: context.auth.uid}).set(userInfoDocRef, {displayName: newName}, {merge: true});
             if (userInfoDoc.exists && userInfoDoc.data().displayName) {
               transaction.delete(admin.firestore().collection("names").doc(userInfoDoc.data().displayName.toUpperCase()));
             }
@@ -169,7 +169,7 @@ exports.deleteFormat = functions.https.onCall((data, context) => {
         return admin.storage().bucket().file("format/" + author + "/" + data.formatId + ".format").delete().then(() => {
           const reportRef = admin.firestore().collection("formatReports").doc(data.reportId);
           if (data.banUser === true) {
-            return admin.firestore().collection("users").doc(author).update({banned: true}).then(() => reportRef.delete());
+            return admin.firestore().collection("users").doc(author).set({banned: true}, {merge: true}).then(() => reportRef.delete());
           }
           return reportRef.delete();
         });
@@ -190,7 +190,7 @@ exports.deleteComment = functions.https.onCall((data, context) => {
       return commentRef.delete().then(() => {
         const reportRef = admin.firestore().collection("commentReports").doc(data.reportId);
         if (data.banUser === true) {
-          return admin.firestore().collection("users").doc(author).update({banned: true}).then(() => reportRef.delete());
+          return admin.firestore().collection("users").doc(author).set({banned: true}, {merge: true}).then(() => reportRef.delete());
         }
         return reportRef.delete();
       });
