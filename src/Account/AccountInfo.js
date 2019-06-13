@@ -33,7 +33,7 @@ class UpdateDisplayName extends Component {
         this.setState({feedback: "Success!", sending: false, oldName: oldName});
       })
       .catch(error => {
-        this.setState({feedback: error.message, sending: false});
+        this.setState({feedback: "Error updating display name: " + error.message, sending: false});
       });
     }
     this.setState({validated: true});
