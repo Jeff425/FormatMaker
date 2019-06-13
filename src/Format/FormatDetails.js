@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import ReactGA from 'react-ga';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import FormGroup from 'react-bootstrap/FormGroup';
@@ -133,26 +134,28 @@ class FormatDetails extends Component {
     }
     return (
       <Container className="marginTop30px">
-        <Row>
-          <h1>{this.state.formatData.name}</h1>
-          <div className="d-flex flex-column ml-auto">
-            <Button variant="danger" onClick={event => this.setState({showReportForm: true})} disabled={this.state.disableReport}>Report Format</Button>
-            {this.state.reportFeedback && <div className="text-muted text-center">{this.state.reportFeedback}</div>}
-          </div>
-        </Row>
-        <Row className="d-flex">
-          {this.state.formatData.authorName && <Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.formatData.authorName}</h4></Link>}
-          <div className="d-flex flex-column ml-auto">
-            {this.state.authUser && <Button variant="primary" onClick={this.favoriteFormat} disabled={this.state.sendingFavorite}>{favorite ? "Remove Favorite" : "Favorite Format"}</Button>}
-            {!this.state.authUser && <Link to={ROUTES.signin + ROUTES.formatdetails +  encodeURIComponent("/") + this.props.match.params.formatId}><Button variant="primary">Sign in to Favorite</Button></Link>}
-            <div className="text-muted text-center">{favoriteCount} have favorited</div>
-          </div>
+        <Row className="px-2">
+          <Col>
+            <h1 className="pr-1">{this.state.formatData.name}</h1>
+            {this.state.formatData.authorName && <Link to={ROUTES.userformat + "/" + this.state.formatData.author} data-toggle="tooltip" title="View this user's formats"><h4 className="text-muted">{this.state.formatData.authorName}</h4></Link>}
+          </Col>
+          <Col md="auto">
+            <div className="d-flex flex-column mb-1">
+              <Button variant="danger" onClick={event => this.setState({showReportForm: true})} disabled={this.state.disableReport} className="my-auto">Report Format</Button>
+              {this.state.reportFeedback && <div className="text-muted text-center">{this.state.reportFeedback}</div>}
+            </div>
+            <div className="d-flex flex-column">
+              {this.state.authUser && <Button variant="primary" onClick={this.favoriteFormat} disabled={this.state.sendingFavorite}>{favorite ? "Remove Favorite" : "Favorite Format"}</Button>}
+              {!this.state.authUser && <Link to={ROUTES.signin + ROUTES.formatdetails +  encodeURIComponent("/") + this.props.match.params.formatId}><Button variant="primary">Sign in to Favorite</Button></Link>}
+              <div className="text-muted text-center">{favoriteCount} have favorited</div>
+            </div>
+          </Col>
         </Row>
         <hr />
-        <Row>{description}</Row>
+        <Row className="px-2">{description}</Row>
         <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>
         
-        {!this.state.commentsLoading && <Row className="mt-5">
+        {!this.state.commentsLoading && <Row className="mt-5 px-2">
           <div className="fullWidth">
             <h3>Comments <small className="text-muted">{this.state.comments.length} comments</small></h3>
             <hr />

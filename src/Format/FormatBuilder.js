@@ -218,7 +218,7 @@ class FormatBuilderBase extends Component {
   saveFormat() {
     if (this.state.name !== "" && this.state.desc !== "") {
       this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, this.state.longDesc, JSON.stringify({deckMin: this.state.deckMin, deckMax: this.state.deckMax, sideboardAllowed: this.state.sideboardAllowed, sideMin: this.state.sideMin, sideMax: this.state.sideMax, groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
-      this.setState({isLoading: true});
+      this.setState({isLoading: true, error: ""});
     } else {
       this.setState({showInfo: true});
     }
@@ -333,6 +333,10 @@ class FormatBuilderBase extends Component {
     if (this.state.showInfo) {
       return (
         <div className="main-page">
+          {this.state.error && <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3" onClose={() => this.setState({error: ""})}>
+            <Alert.Heading>Error with format</Alert.Heading>
+            <p>{this.state.error}</p>
+          </Alert>}
           <div className="singleApp">
             <h1>Edit Format Info</h1>
             <h5 className="text-muted">Please give a name and a description to the format</h5>

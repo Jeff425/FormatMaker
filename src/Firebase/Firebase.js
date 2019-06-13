@@ -125,7 +125,7 @@ class Firebase {
       longDesc = "";
     }
     (firebaseId ?
-      this.db.collection("formats").doc(firebaseId).update({name: name, description: desc, longDescription: longDesc, author: authUser.uid}) :
+      this.db.collection("formats").doc(firebaseId).update({name: name, description: desc, longDescription: longDesc}) :
       this.db.collection("formats").add({name: name, description: desc, longDescription: longDesc, author: authUser.uid}))
       .then(docRef => {
         const formatRef = this.storage.ref().child("format/" + authUser.uid + "/" + (firebaseId ? firebaseId : docRef.id) + ".format");
