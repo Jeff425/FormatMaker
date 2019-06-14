@@ -45,7 +45,7 @@ class OmniSearchbar extends Component {
     if(!this.colorCheck(card)) {
       return false;
     }
-    if(!this.textCheck(card, searchString)) {
+    if(!this.textCheck(card, searchString) && !this.textCheck(card, searchString.replace(/-/g, "—"))) {
       return false;
     }
     return true;
