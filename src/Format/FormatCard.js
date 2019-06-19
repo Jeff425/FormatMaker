@@ -8,7 +8,7 @@ import ROUTES from './../ROUTES';
 class FormatCard extends Component {
   render() {
     return (
-      <Card key={this.props.format.id} className="formatCard ml-3 mr-3 mt-3">
+      <Card className="formatCard ml-3 mr-3 mt-3">
         <Card.Body className="d-flex flex-column">
           <Card.Title>{this.props.format.name}</Card.Title>
           {this.props.format.authorName && <Link to={ROUTES.userformat + "/" + this.props.format.author} data-toggle="tooltip" title="View this user's formats" onClick={event=> window.scrollTo(0, 0)}><Card.Subtitle className="mb-2 text-muted">{this.props.format.authorName}</Card.Subtitle></Link>}
@@ -22,7 +22,7 @@ class FormatCard extends Component {
           {this.props.removeFormat && <div className="d-flex justify-content-between align-items-center">
             <Card.Link as={Link} to={ROUTES.formatdetails + "/" + this.props.format.id} onClick={event=> window.scrollTo(0, 0)}>View Format Info</Card.Link>
           </div>}
-        </Card.Body> 
+        </Card.Body>
       </Card>
     );
   }

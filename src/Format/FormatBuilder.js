@@ -33,8 +33,9 @@ class FormatBuilderBase extends Component {
         "maxCopies": 0,
         "cards": [
           {
-            "imageUri": "https://img.scryfall.com/cards/small/en/xln/260.jpg?1527431524",
-            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435421",
+            "imageUri": "https://img.scryfall.com/cards/small/front/d/9/d92ef517-2417-43a2-8b1a-0673d1531c65.jpg?1557577493",
+            "normalImage": "https://img.scryfall.com/cards/normal/front/d/9/d92ef517-2417-43a2-8b1a-0673d1531c65.jpg?1557577493",
+            "gathererLink": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=461177",
             "name": "Plains",
             "type_line": "Basic Land — Plains",
             "oracle_text": "({T}: Add {W}.)",
@@ -46,8 +47,9 @@ class FormatBuilderBase extends Component {
             "id": "51ff6ee0-01f4-432f-916b-ed771904d64c"
           },
           {
-            "imageUri": "https://img.scryfall.com/cards/small/en/xln/264.jpg?1527431586",
-            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435425",
+            "imageUri": "https://img.scryfall.com/cards/small/front/7/0/7014b9fc-a906-4ffd-a482-22ba8dbe3b4a.jpg?1557577515",
+            "normalImage": "https://img.scryfall.com/cards/normal/front/7/0/7014b9fc-a906-4ffd-a482-22ba8dbe3b4a.jpg?1557577515",
+            "gathererLink": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=461180",
             "name": "Island",
             "type_line": "Basic Land — Island",
             "oracle_text": "({T}: Add {U}.)",
@@ -59,8 +61,9 @@ class FormatBuilderBase extends Component {
             "id": "40c840af-9a13-4716-8458-09071239cc26"
           },
           {
-            "imageUri": "https://img.scryfall.com/cards/small/en/xln/268.jpg?1527431644",
-            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435429",
+            "imageUri": "https://img.scryfall.com/cards/small/front/2/4/24eeb424-235d-4346-9355-57914e740ec6.jpg?1557577534",
+            "normalImage": "https://img.scryfall.com/cards/normal/front/2/4/24eeb424-235d-4346-9355-57914e740ec6.jpg?1557577534",
+            "gathererLink": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=461183",
             "name": "Swamp",
             "type_line": "Basic Land — Swamp",
             "oracle_text": "({T}: Add {B}.)",
@@ -72,8 +75,9 @@ class FormatBuilderBase extends Component {
             "id": "db69a637-5770-4eea-9b04-c00e6f90a12a"
           },
           {
-            "imageUri": "https://img.scryfall.com/cards/small/en/xln/272.jpg?1527431712",
-            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435433",
+            "imageUri": "https://img.scryfall.com/cards/small/front/4/8/489fdba7-5c25-4cf3-a1e0-3e0fda6c6ee6.jpg?1557577552",
+            "normalImage": "https://img.scryfall.com/cards/normal/front/4/8/489fdba7-5c25-4cf3-a1e0-3e0fda6c6ee6.jpg?1557577552",
+            "gathererLink": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=461186",
             "name": "Mountain",
             "type_line": "Basic Land — Mountain",
             "oracle_text": "({T}: Add {R}.)",
@@ -85,8 +89,9 @@ class FormatBuilderBase extends Component {
             "id": "15c96b83-d0b3-4da9-bb2d-249cc18b55e9"
           },
           {
-            "imageUri": "https://img.scryfall.com/cards/small/en/xln/276.jpg?1527431779",
-            "gathererLink": "http://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=435437",
+            "imageUri": "https://img.scryfall.com/cards/small/front/a/9/a9d61651-349e-40d0-a7c4-c9561e190405.jpg?1557577572",
+            "normalImage": "https://img.scryfall.com/cards/normal/front/a/9/a9d61651-349e-40d0-a7c4-c9561e190405.jpg?1557577572",
+            "gathererLink": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=461189",
             "name": "Forest",
             "type_line": "Basic Land — Forest",
             "oracle_text": "({T}: Add {G}.)",
@@ -279,7 +284,14 @@ class FormatBuilderBase extends Component {
   }
   
   onGroupDelete(groupName) {
-    this.setState({currentTab: "addGroup", groups: this.state.groups.filter(otherGroup => otherGroup.groupName !== groupName)});
+    const deletedGroup = this.state.groups.find(otherGroup => otherGroup.groupName === groupName);
+    if (deletedGroup) {
+      const newIds = new Set(this.state.formatIds);
+      deletedGroup.cards.forEach(card => {
+        newIds.delete(card.name);
+      });
+      this.setState({currentTab: "addGroup", groups: this.state.groups.filter(otherGroup => otherGroup.groupName !== groupName), formatIds: newIds});
+    }
   }
   
   onTabChange(key) {

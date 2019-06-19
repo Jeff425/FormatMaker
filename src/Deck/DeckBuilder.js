@@ -93,10 +93,17 @@ class DeckBuilder extends Component {
     const newDeckAmount = {...deckAmount};
     newDeckAmount[card.name] = 1;
     if (sideboard) {
-      this.setState({sideSelection: newDeck, sideAmount: newDeckAmount});
+      this.setState({sideSelection: this.cmcSort(newDeck), sideAmount: newDeckAmount});
     } else {
-      this.setState({deckSelection: newDeck, deckAmount: newDeckAmount});
+      this.setState({deckSelection: this.cmcSort(newDeck), deckAmount: newDeckAmount});
     }
+  }
+  
+  //Used only when adding a card
+  cmcSort(cards) {
+    return cards.sort((a, b) => {
+      return a.cmc - b.cmc;
+    });
   }
   
   removeCard(card, sideboard = false) {
@@ -122,20 +129,31 @@ class DeckBuilder extends Component {
     }
   }
   
-  deckString(url = false) {
+  urlDeckString() {
     let saveString = "";
     this.state.deckSelection.forEach(card => {
-      saveString += this.state.deckAmount[card.name] + " " + card.name + (url ? "||" : "\n");
+      saveString += this.state.deckAmount[card.name] + " " + (card.searchName ? card.searchName : card.name) + "||";
     });
     if (this.state.sideSelection.length > 0) {
-      if (!url) {
-        saveString += "//Sideboard\n";
-      }
       this.state.sideSelection.forEach(card => {
-        saveString += this.state.sideAmount[card.name] + " " + card.name + (url ? "||" : "\n");
+        saveString += this.state.sideAmount[card.name] + " " + (card.searchName ? card.searchName : card.name) + "||";
       });
     }
-    return saveString.substring(0, saveString.length - (url ? 2 : 1));
+    return saveString.substring(0, saveString.length - 2);
+  }
+  
+  deckString() {
+    let saveString = "";
+    this.state.deckSelection.forEach(card => {
+      saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
+    });
+    if (this.state.sideSelection.length > 0) {
+      saveString += "//Sideboard\n";
+      this.state.sideSelection.forEach(card => {
+        saveString += this.state.sideAmount[card.name] + " " + card.name + "\n";
+      });
+    }
+    return saveString.substring(0, saveString.length - 1);
   }
   
   cockatriceDeckString() {
@@ -205,7 +223,7 @@ class DeckBuilder extends Component {
           }
         }
       });
-      this.setState({deckSelection: selection, deckAmount: amount, sideSelection: sideSelection, sideAmount: sideAmount});
+      this.setState({deckSelection: this.cmcSort(selection), deckAmount: amount, sideSelection: this.cmcSort(sideSelection), sideAmount: sideAmount});
     };
     reader.readAsText(e.target.files[0]);
   }
@@ -223,7 +241,7 @@ class DeckBuilder extends Component {
     .then(console.log);
     */
     ReactGA.event({category: "Affiliate Link", action: "TCGPlayer", label: this.props.match.params.formatId});
-    window.open("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&c=" + this.deckString(true), "_blank");
+    window.open("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&c=" + this.urlDeckString(), "_blank");
   }
   
   onTabChange(key) {

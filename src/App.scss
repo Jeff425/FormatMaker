@@ -30,6 +30,10 @@ body {
   }
 }
 
+.pointer {
+  cursor: pointer;
+}
+
 footer {
   flex-shrink: 0;
   color: #fff;
@@ -188,6 +192,19 @@ footer {
   
   .topRight {
     min-width: 10rem;
+  }
+}
+
+.mana-cost-simple {
+  height: 15px;
+  object-fit: contain;
+}
+
+.normal-image-container {
+  height: 340px;
+  
+  img {
+    height: 100%;
   }
 }
 

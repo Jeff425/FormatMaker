@@ -101,7 +101,7 @@ class FormatEditor extends Component {
                     </div>
                   )}
                   {this.props.tabKey === tabKey && (
-                    <div className="centerAlign">
+                    <div className="fullWidth centerAlign">
                       {cards && cards.slice((this.state.page - 1) * 60, this.state.page * 60).map(card =>
                         <CardObj card={card} key={card.id} onRemove={this.props.removeCard} usePointSystem={group.usePointSystem} editPoints={true} groupMaxPoints={group.maxPoints} />
                       )}

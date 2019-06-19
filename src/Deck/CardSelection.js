@@ -42,7 +42,7 @@ class CardSelection extends Component {
         {this.state.showInfo && (<Card className="fullWidth">
           <Card.Body>
             <Card.Title>{this.props.formatName}</Card.Title>
-            <Card.Text>
+            <div className="card-text">
               <p>{this.props.formatDesc}</p>
               {(this.props.deckMin > 0 || this.props.deckMax > 0 || this.props.sideboardAllowed) && <hr />}
               {(this.props.deckMin > 0 || this.props.deckMax > 0) && (
@@ -59,7 +59,7 @@ class CardSelection extends Component {
               <div className="d-flex">
                 <Link to={ROUTES.formatdetails + "/" + this.props.match.params.formatId} className="mx-auto"><Button>View Full Information</Button></Link>
               </div>
-            </Card.Text>
+            </div>
           </Card.Body>
         </Card>)}
         <div className="fullWidth mt-1">
@@ -96,7 +96,7 @@ class CardSelection extends Component {
                     {group.usePointSystem && <div>Maximum Points: {group.maxPoints}</div>}
                   </div>                  
                   {this.props.tabKey === tabKey && (
-                    <div className="centerAlign">
+                    <div className="fullWidth centerAlign">
                       {cards && cards.slice((this.state.page - 1) * 60, this.state.page * 60).map(card => 
                         <CardObj card={card} key={card.id} onSelect={this.props.addCard} onSide={this.props.sideboardAllowed ? card => this.props.addCard(card, true) : null} usePointSystem={group.usePointSystem} />
                       )}

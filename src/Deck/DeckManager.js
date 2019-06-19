@@ -14,7 +14,7 @@ function CardSection(props) {
   return (
     <div className="viewport fullWidth mt-3">
       <TitledDivider title={props.title} />
-      <div className="centerAlign">
+      <div className="fullWidth">
         {props.cards.map(card => {
           return <CardObj card={card} key={card.name} count={props.deckAmount[card.name]} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
         })}
@@ -172,9 +172,9 @@ class DeckManager extends Component {
               <Col>{"Other Cards: " + otherCount}</Col>
             </Row>
           </Container>
-          <div className="centerAlign">
+          <div className="fullWidth centerAlign">
             {this.props.deck && this.props.deck.map(card => {
-              return <CardObj card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
+              return <CardObj simpleView={true} card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
             })}
           </div>
           <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount +  ")" + sideboardError} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
