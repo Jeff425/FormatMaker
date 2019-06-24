@@ -152,7 +152,7 @@ class FormatDetails extends Component {
           </Col>
         </Row>
         <hr />
-        <Row className="px-2 d-block">{description}</Row>
+        <Row className="px-4 d-block">{description}</Row>
         <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>
         
         {!this.state.commentsLoading && <Row className="mt-5 px-2">

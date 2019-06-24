@@ -53,7 +53,7 @@ class DeckBuilder extends Component {
     format.sideMin = format.sideMin ? format.sideMin : 0;
     format.sideMax = format.sideMax ? format.sideMax : 0;
     const sideboardAllowed = format.sideboardAllowed || format.sideboardAllowed !== false;
-    this.setState({commanderFormat: !!commanderFormat, hasUpdatedCards: !!hasUpdatedCards, formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc, deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
+    this.setState({commanderFormat: !!commanderFormat, hasUpdatedCards: !!hasUpdatedCards, formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc, deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax, fileType: !!commanderFormat ? 1 : 0});
     if (this.state.sortingFunc) {
       this.sort(this.state.sortingFunc, format.groups);
     } else {
@@ -311,7 +311,8 @@ class DeckBuilder extends Component {
                 sideMin={this.state.sideMin}
                 sideMax={this.state.sideMax}
                 commanderFormat={this.state.commanderFormat}
-                commanderSelection={this.state.commanderSelection}
+                deckAmount={this.state.deckAmount}
+                sideAmount={this.state.sideAmount}
                 addCommander={this.addCommander}
               />
             </Col>
@@ -350,7 +351,7 @@ class DeckBuilder extends Component {
               </FormGroup>
               <FormLabel>File Type:</FormLabel>
               <div>
-                <FormCheck inline type="radio" label=".txt" checked={this.state.fileType === 0} onChange={event => event.target.checked && this.setState({fileType: 0})} />
+                <FormCheck inline type="radio" label=".txt" checked={this.state.fileType === 0} onChange={event => event.target.checked && this.setState({fileType: 0})} data-toggle={this.state.commanderFormat ? "tooltip" : ""} title={this.state.commanderFormat ? "Saving in another program will overwrite commander selection" : ""} />
                 <FormCheck inline type="radio" label=".deck" checked={this.state.fileType === 1} onChange={event => event.target.checked && this.setState({fileType: 1})} />
               </div>
             </Modal.Body>

@@ -41,7 +41,8 @@ class CardSelection extends Component {
         </ButtonGroup>
         {this.state.showInfo && (<Card className="fullWidth">
           <Card.Body>
-            <Card.Title>{this.props.formatName}</Card.Title>
+            <Card.Title className="mb-1">{this.props.formatName}</Card.Title>
+            {this.props.commanderFormat && <Card.Subtitle className="text-muted mb-2">Commander Format</Card.Subtitle>}
             <div className="card-text">
               <p>{this.props.formatDesc}</p>
               {(this.props.deckMin > 0 || this.props.deckMax > 0 || this.props.sideboardAllowed) && <hr />}
@@ -98,7 +99,13 @@ class CardSelection extends Component {
                   {this.props.tabKey === tabKey && (
                     <div className="fullWidth centerAlign">
                       {cards && cards.slice((this.state.page - 1) * 60, this.state.page * 60).map(card => 
-                        <CardObj card={card} key={card.id} onSelect={this.props.addCard} onSide={this.props.sideboardAllowed ? card => this.props.addCard(card, true) : null} usePointSystem={group.usePointSystem} addCommander={(this.props.commanderFormat && !this.props.commanderSelection.has(card.name)) ? this.props.addCommander : null} />
+                        <CardObj 
+                          card={card} 
+                          key={card.id} 
+                          onSelect={this.props.addCard} 
+                          onSide={this.props.sideboardAllowed ? card => this.props.addCard(card, true) : null} 
+                          usePointSystem={group.usePointSystem} 
+                          addCommander={(this.props.commanderFormat && !(card.name in this.props.deckAmount) && !(card.name in this.props.sideAmount)) ? this.props.addCommander : null} />
                       )}
                     </div>)}
                   <div className="d-flex justify-content-center mt-2">
