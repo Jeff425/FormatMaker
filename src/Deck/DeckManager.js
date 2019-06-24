@@ -14,9 +14,9 @@ function CardSection(props) {
   return (
     <div className="viewport fullWidth mt-3">
       <TitledDivider title={props.title} />
-      <div className="fullWidth">
+      <div className="fullWidth centerAlign">
         {props.cards.map(card => {
-          return <CardObj card={card} key={card.name} count={props.deckAmount[card.name]} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
+          return <CardObj card={card} key={card.name} count={props.deckAmount ? props.deckAmount[card.name] : 0} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
         })}
       </div>
     </div>
@@ -30,6 +30,7 @@ class DeckManager extends Component {
     this.typeCount = this.typeCount.bind(this);
     this.sumObjects = this.sumObjects.bind(this);
     this.decrementSideThenDeck = this.decrementSideThenDeck.bind(this);
+    this.removeCommander = this.removeCommander.bind(this);
     this.deckLoadRef = null;
     this.deckSelectionRef = null;
   }
@@ -48,6 +49,11 @@ class DeckManager extends Component {
   
   decrementSideThenDeck(card) {
     this.props.decrementCard(card, !!this.props.sideAmount[card.name]);
+  }
+  
+  removeCommander(card) {
+    this.props.removeCommander(card);
+    this.props.decrementCard(card);
   }
   
   sumObjects(obj1, obj2) {
@@ -149,6 +155,10 @@ class DeckManager extends Component {
       sideboardError = " " + this.props.sideMax + " maximum";
     }
     
+    //Remove commanders from deck and add to separate list
+    const commanders = this.props.deck ? this.props.deck.filter(card => this.props.commanderSelection.has(card.name)) : [];
+    const deck = this.props.deck ? this.props.deck.filter(card => !this.props.commanderSelection.has(card.name)) : [];
+    
     if (this.props.deck && (this.props.deck.length > 0 || this.props.side.length > 0)) {
       return (
         <div className="AppContainer">
@@ -172,9 +182,11 @@ class DeckManager extends Component {
               <Col>{"Other Cards: " + otherCount}</Col>
             </Row>
           </Container>
+          <CardSection title="Commander" cards={commanders} decrementCard={this.removeCommander} />
+          {this.props.commanderSelection.size > 0 && deck.length > 0 && <TitledDivider title="Main Deck" />}
           <div className="fullWidth centerAlign">
-            {this.props.deck && this.props.deck.map(card => {
-              return <CardObj simpleView={true} card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
+            {deck.map(card => {
+              return <CardObj simpleView={false} card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
             })}
           </div>
           <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount +  ")" + sideboardError} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />

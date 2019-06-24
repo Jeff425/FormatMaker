@@ -19,8 +19,10 @@ class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
+    this.state = {commanderFormat: false, hasUpdatedCards: false, groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, commanderSelection: new Set(), name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
     this.sort = this.sort.bind(this);
+    this.addCommander = this.addCommander.bind(this);
+    this.removeCommander = this.removeCommander.bind(this);
     this.addCard = this.addCard.bind(this);
     this.removeCard = this.removeCard.bind(this);
     this.saveDeckFile = this.saveDeckFile.bind(this);
@@ -38,7 +40,7 @@ class DeckBuilder extends Component {
     this.props.firebase.readFormat(this.props.match.params.formatId, this.successRead, this.errorRead);
   }
   
-  successRead(name, desc, longDesc, formatText) {
+  successRead(name, desc, longDesc, hasUpdatedCards, commanderFormat, formatText) {
     const formatIds = {};
     const format = JSON.parse(formatText);
     for (let i = 0; i < format.groups.length; i++) {
@@ -51,7 +53,7 @@ class DeckBuilder extends Component {
     format.sideMin = format.sideMin ? format.sideMin : 0;
     format.sideMax = format.sideMax ? format.sideMax : 0;
     const sideboardAllowed = format.sideboardAllowed || format.sideboardAllowed !== false;
-    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc, deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
+    this.setState({commanderFormat: !!commanderFormat, hasUpdatedCards: !!hasUpdatedCards, formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "", name: name, desc: desc, deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
     if (this.state.sortingFunc) {
       this.sort(this.state.sortingFunc, format.groups);
     } else {
@@ -74,6 +76,22 @@ class DeckBuilder extends Component {
       group.cards = sortingFunc(group.cards);
     });
     this.setState({sortingFunc: sortingFunc, groups: groups});
+  }
+  
+  // Should add to deck if it isn't already in deck for restriction calculations
+  // Should ONLY be displayed under commander section and error groups. Not in main deck.
+  // Cannot be a sideboard card
+  addCommander(card) {
+    if (!this.state.commanderFormat) {
+      return;
+    }
+    this.setState({commanderSelection: this.state.commanderSelection.add(card.name)});
+  }
+  
+  removeCommander(card) {
+    const newCommanders = new Set(this.state.commanderSelection);
+    newCommanders.delete(card.name);
+    this.setState({commanderSelection: newCommanders});
   }
   
   addCard(card, sideboard = false) {
@@ -153,6 +171,14 @@ class DeckBuilder extends Component {
         saveString += this.state.sideAmount[card.name] + " " + card.name + "\n";
       });
     }
+    if (this.state.commanderSelection.size > 0) {
+      saveString += "//Commander\n";
+      this.state.commanderSelection.forEach(cardName => {
+        if (this.state.deckAmount[cardName]) {
+          saveString += "1 " + cardName + "\n";
+        }
+      });
+    }
     return saveString.substring(0, saveString.length - 1);
   }
   
@@ -163,6 +189,9 @@ class DeckBuilder extends Component {
     });
     this.state.sideSelection.forEach(card => {
       saveString += "SB: " + this.state.sideAmount[card.name] + " " + card.name + "\n";
+    });
+    this.state.commanderSelection.forEach(cardName => {
+      saveString += "CM: 1 " + cardName + "\n";
     });
     return saveString.substring(0, saveString.length - 1);
   }
@@ -193,16 +222,27 @@ class DeckBuilder extends Component {
       const amount = {};
       const sideSelection = [];
       const sideAmount = {};
+      const commanderSelection = new Set();
       let isSideboard = false;
+      let isCommander = false;
       reader.result.replace(/\r/g, '').split("\n").forEach(line => {      
         if (!isSideboard && line === "//Sideboard") {
           isSideboard = true;
           return;
         }
+        if (!isCommander && line === "//Commander") {
+          isCommander = true;
+          return;
+        }
         let tempSideboard = false;
         let startIndex = 0;
+        let tempCommander = false;
         if (line.substr(0, 4) === "SB: ") {
           tempSideboard = true;
+          startIndex = 4;
+        }
+        else if (line.substr(0, 4) === "CM: ") {
+          tempCommander = true;
           startIndex = 4;
         }
         
@@ -214,7 +254,10 @@ class DeckBuilder extends Component {
         const cardDetails = this.state.formatIds[name];
         if (cardDetails) {
           const card = cardDetails.card;
-          if (isSideboard || tempSideboard) {
+          if (isCommander || tempCommander) {
+            commanderSelection.add(card.name);
+          }
+          else if (isSideboard || tempSideboard) {
             sideSelection.push(card);
             sideAmount[card.name] = count;
           } else {
@@ -223,7 +266,7 @@ class DeckBuilder extends Component {
           }
         }
       });
-      this.setState({deckSelection: this.cmcSort(selection), deckAmount: amount, sideSelection: this.cmcSort(sideSelection), sideAmount: sideAmount});
+      this.setState({deckSelection: this.cmcSort(selection), deckAmount: amount, sideSelection: this.cmcSort(sideSelection), sideAmount: sideAmount, commanderSelection: commanderSelection});
     };
     reader.readAsText(e.target.files[0]);
   }
@@ -267,6 +310,9 @@ class DeckBuilder extends Component {
                 sideboardAllowed={this.state.sideboardAllowed}
                 sideMin={this.state.sideMin}
                 sideMax={this.state.sideMax}
+                commanderFormat={this.state.commanderFormat}
+                commanderSelection={this.state.commanderSelection}
+                addCommander={this.addCommander}
               />
             </Col>
             <Col lg>
@@ -287,6 +333,8 @@ class DeckBuilder extends Component {
                 sideboardAllowed={this.state.sideboardAllowed}
                 sideMin={this.state.sideMin}
                 sideMax={this.state.sideMax}
+                commanderSelection={this.state.commanderSelection}
+                removeCommander={this.removeCommander}
               />
             </Col>
           </Row>

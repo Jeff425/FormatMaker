@@ -20,7 +20,7 @@ class FormatBuilderBase extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {name: "", desc: "", longDesc: "", showInfo: false, isLoading: true, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, deckMin: 60, deckMax: 0, sideboardAllowed: true, sideMin: 0, sideMax: 15, groups: [
+    this.state = {name: "", desc: "", longDesc: "", showInfo: false, isLoading: true, hasUpdatedCards: true, commanderFormat: false, formatIds: new Set(["Plains", "Island", "Swamp", "Mountain", "Forest"]), sortingFunc: null, authUser: null, error: "", didSucceed: false, deckMin: 60, deckMax: 0, sideboardAllowed: true, sideMin: 0, sideMax: 15, groups: [
       {
         "groupName": "Legal Cards",
         "maxTotal": 0,
@@ -222,7 +222,7 @@ class FormatBuilderBase extends Component {
   
   saveFormat() {
     if (this.state.name !== "" && this.state.desc !== "") {
-      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, this.state.longDesc, JSON.stringify({deckMin: this.state.deckMin, deckMax: this.state.deckMax, sideboardAllowed: this.state.sideboardAllowed, sideMin: this.state.sideMin, sideMax: this.state.sideMax, groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
+      this.props.firebase.writeFormat(this.state.authUser, this.state.name, this.state.desc, this.state.longDesc, this.state.hasUpdatedCards, this.state.commanderFormat, JSON.stringify({deckMin: this.state.deckMin, deckMax: this.state.deckMax, sideboardAllowed: this.state.sideboardAllowed, sideMin: this.state.sideMin, sideMax: this.state.sideMax, groups: this.state.groups}), this.successWrite, this.errorWrite, this.props.match.params.formatId);
       this.setState({isLoading: true, error: ""});
     } else {
       this.setState({showInfo: true});
@@ -243,7 +243,7 @@ class FormatBuilderBase extends Component {
     this.props.firebase.readFormat(firebaseId, this.successRead, this.errorRead, true, this.state.authUser);
   }
   
-  successRead(name, desc, longDesc, formatText) {
+  successRead(name, desc, longDesc, hasUpdatedCards, commanderFormat, formatText) {
     this.setState({name: name, desc: desc, longDesc: longDesc, showInfo: false, isLoading: false, error: ""});
     const formatIds = new Set();
     const format = JSON.parse(formatText);
@@ -257,7 +257,7 @@ class FormatBuilderBase extends Component {
     format.sideMin = format.sideMin ? format.sideMin : 0;
     format.sideMax = format.sideMax ? format.sideMax : 0;
     const sideboardAllowed = format.sideboardAllowed || format.sideboardAllowed !== false;
-    this.setState({formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "addGroup", deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
+    this.setState({commanderFormat: !!commanderFormat, hasUpdatedCards: !!hasUpdatedCards, formatIds: formatIds, currentTab: format.groups.length > 0 ? "extra_" + format.groups[0].groupName : "addGroup", deckMin: format.deckMin, deckMax: format.deckMax, sideboardAllowed: sideboardAllowed, sideMin: format.sideMin, sideMax: format.sideMax});
     if (this.state.sortingFunc) {
       this.sort(this.state.sortingFunc, format.groups);
     } else {
@@ -389,6 +389,12 @@ class FormatBuilderBase extends Component {
                 </FormGroup>
               </FormRow>
             )}
+            <FormGroup>
+              <FormCheck type="checkbox">
+                <FormCheck.Input type="checkbox" checked={this.state.commanderFormat} onChange={event => this.setState({commanderFormat: event.target.checked})} />
+                <FormCheck.Label>Format uses the command zone <span className="text-muted">(Such as Commander or Oathbreaker)</span></FormCheck.Label>
+              </FormCheck>
+            </FormGroup>
             <div className="d-flex flex-row">
               <Button variant="primary" size="lg" onClick={() => this.setState({showInfo: false})}>Back</Button>
               <Button variant="primary" size="lg" className="flex-grow-1 ml-3" onClick={this.saveFormat}>Submit</Button>

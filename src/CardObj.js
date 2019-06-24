@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 class ButtonNumber extends Component {
   render() {
     if (this.props.alwaysShow || (this.props.number && this.props.number !== 0)) {
-      return <Button variant="info" className="my-1">{this.props.number ? this.props.number : 0}</Button>;
+      return <Button variant={this.props.variant} className={this.props.className} onClick={this.props.onClick}>{this.props.number ? this.props.number : 0}</Button>;
     }
     return null;
   }
@@ -18,6 +18,7 @@ class CardObj extends Component {
   constructor(props) {
     super(props);   
     this.viewCard = this.viewCard.bind(this);
+    this.purchaseCard = this.purchaseCard.bind(this);
     this.changePoints = this.changePoints.bind(this);
     this.state = {};
     if (!props.card.points) {
@@ -48,6 +49,11 @@ class CardObj extends Component {
     } else {
       console.log("Invalid info link, potentially dangerous: " + this.props.card.gathererLink);
     }
+  }
+  
+  purchaseCard() {
+    const url = "https://shop.tcgplayer.com/magic/product/show?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&ProductName=" + (this.props.card.searchName ? this.props.card.searchName : this.props.card.name);
+    window.open(url, "_blank");
   }
   
   changePoints(increment) {
@@ -89,9 +95,9 @@ class CardObj extends Component {
           {this.state.showNormal && (<div className="normal-image-container pointer" onClick={event => this.setState({showNormal: !this.state.showNormal})}>
             <img alt="Normal Size" src={this.props.card.normalImage} />
           </div>)}
-          {this.state.showNormal && (<ButtonGroup>
+          {this.state.showNormal && (<ButtonGroup className="mt-1">
             <Button variant="info" className="flexShare" onClick={this.viewCard}>View on Gatherer</Button>
-            <Button className="flexShare">Purchase on TCGPlayer</Button>
+            <Button className="flexShare" onClick={this.purchaseCard}>Purchase on TCGPlayer</Button>
           </ButtonGroup>)}
         </div>
       );
@@ -109,19 +115,20 @@ class CardObj extends Component {
         {this.props.onRemove && (
           <Button variant="danger" className="cardRemove" onClick={event => this.props.onRemove(this.props.card)}>{(this.props.subtract && this.props.count && this.props.count > 1) ? <b>-1</b> : <FontAwesomeIcon icon="times" className="fa-w-16" />}</Button>
         )}
-        {this.props.count && (
-          <Button variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)}>{this.props.count}</Button>
-        )}
+        <ButtonNumber variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)} number={this.props.count} />
         {this.props.onSide && (
           <Button variant="primary" className="sideboard" onClick={event => this.props.onSide(this.props.card)}><b>S</b></Button>
         )}
         {this.props.onMain && (
           <Button variant="primary" className="sideboard" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
         )}
+        {this.props.onSelect && this.props.addCommander && (
+          <Button variant="warning" className="cardRemove" onClick={event => { this.props.onSelect(this.props.card); this.props.addCommander(this.props.card); }}><b>C</b></Button>
+        )}
         {this.props.usePointSystem && (<div className="pointSection">
           <div className="d-flex flex-column justify-content-center" data-toggle="tooltip" title={this.props.editPoints ? "Adjust point value for this card" : "Point value for this card"}>
             {this.props.editPoints && <Button variant="primary" onClick={event => this.changePoints(true)}>+</Button>}
-            <ButtonNumber alwaysShow={this.props.editPoints} number={this.props.card.points} />
+            <ButtonNumber variant="info" className="my-1" alwaysShow={this.props.editPoints} number={this.props.card.points} />
             {this.props.editPoints && <Button variant="primary" onClick={event => this.changePoints(false)}>-</Button>}
           </div>
         </div>)}
