@@ -5,6 +5,7 @@ import FormControl from 'react-bootstrap/FormControl';
 import Button from 'react-bootstrap/Button';
 import Pagination from 'react-bootstrap/Pagination';
 import CardObj from './../CardObj';
+import { scryfallLoop } from './ScryfallQuery';
 
 class ScryfallLoader extends Component {
   
@@ -14,7 +15,6 @@ class ScryfallLoader extends Component {
     this.scryfallSearch = this.scryfallSearch.bind(this);
     this.onSearchChange = this.onSearchChange.bind(this);
     this.onSearchKeyPress = this.onSearchKeyPress.bind(this);
-    this.scryfallLoop = this.scryfallLoop.bind(this);
     this.removeFromSearch = this.removeFromSearch.bind(this);
     this.addAllSearch = this.addAllSearch.bind(this);
   }
@@ -31,51 +31,8 @@ class ScryfallLoader extends Component {
   
   scryfallSearch() {
     this.setState({searchEnabled: false, searchResults: [], page: 1});
-    this.scryfallLoop("https://api.scryfall.com/cards/search?q=" + this.state.searchString);
+    scryfallLoop("https://api.scryfall.com/cards/search?q=" + this.state.searchString, data => this.setState({searchResults: this.state.searchResults.concat(data)}), () => this.setState({searchEnabled: true}));
     ReactGA.event({category: "Search", action: "Scryfall Search", label: this.state.searchString});
-  }
-  
-  scryfallLoop(query) {
-    fetch(query)
-    .then(res => res.json())
-    .then(
-      (result) => {
-        if (result.data) {
-          const data = result.data.map((e) => {
-            return {
-              imageUri: e.image_uris ? e.image_uris.small : (e.card_faces ? e.card_faces[0].image_uris.small : "//:0"),
-              normalImage: e.image_uris ? e.image_uris.normal : (e.card_faces ? e.card_faces[0].image_uris.normal : "//:0"),
-              gathererLink: e.related_uris.gatherer,
-              name: e.name,
-              searchName: (e.card_faces ? e.card_faces[0].name : e.name),
-              type_line: e.type_line ? e.type_line : (e.card_faces ? e.card_faces[0].type_line : ""),
-              oracle_text: e.oracle_text ? e.oracle_text : (e.card_faces ? e.card_faces[0].oracle_text : ""),
-              colors: e.colors,
-              color_identity: e.color_identity,
-              mana_cost: e.mana_cost ? e.mana_cost : (e.card_faces ? e.card_faces[0].mana_cost : ""),
-              cmc: e.cmc,
-              id: e.id,
-              price: e.prices.usd
-            };
-          });
-          this.setState({searchResults: this.state.searchResults.concat(data)});
-          if (!result.has_more) {
-            this.setState({searchEnabled: true});
-          }
-          else {         
-            setTimeout(() => {
-              this.scryfallLoop(result.next_page);
-            }, 100);
-          }
-        }
-        else {
-          this.setState({searchEnabled: true});
-        }
-      },
-      (error) => {
-        console.log(error);
-      }
-    );
   }
   
   removeFromSearch(card) {

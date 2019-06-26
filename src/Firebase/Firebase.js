@@ -50,6 +50,7 @@ class Firebase {
     this.ignoreCommentReport = this.ignoreCommentReport.bind(this);
     this.deleteCommentAdmin = this.deleteCommentAdmin.bind(this);
     this.cleanUpDB = this.cleanUpDB.bind(this);
+    this.scryfallCollectionPost = this.scryfallCollectionPost.bind(this);
   }
   
   createUser(email, password) {
@@ -293,6 +294,11 @@ class Firebase {
   
   queryChangelog() {
     return this.db.collection("changelog").orderBy("date", "desc").get();
+  }
+  
+  scryfallCollectionPost(scryfallBody) {
+    const scryfallCollection = this.functions.httpsCallable("scryfallCollection");
+    return scryfallCollection({scryfallBody: scryfallBody});
   }
 }
 

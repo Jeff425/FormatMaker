@@ -13,6 +13,7 @@ import Alert from 'react-bootstrap/Alert';
 import { Link, withRouter } from 'react-router-dom';
 import FormatEditor from './FormatEditor';
 import ScryfallLoader from './ScryfallLoader';
+import { scryfallPost } from './ScryfallQuery';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
 
@@ -121,6 +122,7 @@ class FormatBuilderBase extends Component {
     this.errorRead = this.errorRead.bind(this);
     this.changeDeckMin = this.changeDeckMin.bind(this);
     this.changeDeckMax = this.changeDeckMax.bind(this);
+    this.updateFormat = this.updateFormat.bind(this);
   }
   
   componentDidMount() {
@@ -334,6 +336,25 @@ class FormatBuilderBase extends Component {
     this.setState({[max]: nextValue, [min]: newMin});
   }
   
+  updateFormat() {
+    const groups = [...this.state.groups];
+    this.setState({isLoading: true});
+    Promise.all(this.state.groups.map((group, i) => {
+      return new Promise((resolve, reject) => scryfallPost(group.cards, this.props.firebase).then(result => {
+        const newGroup = group;
+        newGroup.cards = result.foundCards;
+        groups[i] = newGroup; //groupIndex matters
+        if (result.notFound.length > 0) {
+          console.warn("Could not find these cards:", result.notFound);
+        }
+        resolve(null);
+      }).catch(reject));
+    }))
+    .then(() => {
+      this.setState({groups: groups, isLoading: false, hasUpdatedCards: true});
+    });
+  }
+  
   render() {
     if (this.state.isLoading) {
       return (
@@ -416,6 +437,10 @@ class FormatBuilderBase extends Component {
             <Alert.Heading>Success!</Alert.Heading>
             <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={ROUTES.format + "/" + this.props.match.params.formatId}>directly</Link> or you may view the landing page for your format <Link to={ROUTES.formatdetails + "/" + this.props.match.params.formatId}>here.</Link> (Copy that link and send it to your friends!)</p>
           </Alert>      
+        </Row>}
+        {!this.state.hasUpdatedCards && <Row className="align-items-center flex-column">
+          <Button className="mt-5" variant="primary" size="lg" onClick={this.updateFormat}>Update format to support publishing decks</Button>
+          <div className="text-warning">May take a long time!</div>
         </Row>}
         <Row>
           <Col lg>

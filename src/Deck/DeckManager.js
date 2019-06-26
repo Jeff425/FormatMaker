@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import FormCheck from 'react-bootstrap/FormCheck';
 import CardObj from './../CardObj';
 import TitledDivider from './TitledDivider';
 
@@ -16,7 +17,7 @@ function CardSection(props) {
       <TitledDivider title={props.title} />
       <div className="fullWidth centerAlign">
         {props.cards.map(card => {
-          return <CardObj card={card} key={card.name} count={props.deckAmount ? props.deckAmount[card.name] : 0} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
+          return <CardObj simpleView={props.simpleView} card={card} key={card.name} count={props.deckAmount ? props.deckAmount[card.name] : 0} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
         })}
       </div>
     </div>
@@ -33,6 +34,7 @@ class DeckManager extends Component {
     this.removeCommander = this.removeCommander.bind(this);
     this.deckLoadRef = null;
     this.deckSelectionRef = null;
+    this.state = {simpleView: true};
   }
   
   typeCount(typeString) {
@@ -181,25 +183,28 @@ class DeckManager extends Component {
               <Col>{"Instants and Sorceries: " + instantSorceryCount}</Col>
               <Col>{"Other Cards: " + otherCount}</Col>
             </Row>
+            <Row className="mt-2">
+              <Col><FormCheck type="checkbox" label="View cards as images" checked={!this.state.simpleView} onChange={event => this.setState({simpleView: !event.target.checked})} /></Col>
+            </Row>
           </Container>
-          <CardSection title="Commander" cards={commanders} decrementCard={this.removeCommander} />
+          <CardSection simpleView={this.state.simpleView} title="Commander" cards={commanders} decrementCard={this.removeCommander} />
           {this.props.commanderSelection.size > 0 && deck.length > 0 && <TitledDivider title="Main Deck" />}
           <div className="fullWidth centerAlign">
             {deck.map(card => {
-              return <CardObj simpleView={false} card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
+              return <CardObj simpleView={this.state.simpleView} card={card} key={card.name} count={this.props.deckAmount[card.name]} onIncrement={this.props.incrementCard} onSelect={this.props.incrementCard} onRemove={this.props.decrementCard} onSide={this.props.sideboardAllowed ? card => {this.props.decrementCard(card); this.props.incrementCard(card, true)} : null} subtract={true} usePointSystem={this.props.groups[this.props.formatIds[card.name].groupIndex].usePointSystem} />;
             })}
           </div>
-          <CardSection deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount +  ")" + sideboardError} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
+          <CardSection simpleView={this.state.simpleView} deckAmount={this.props.sideAmount} decrementCard={card => this.props.decrementCard(card, true)} incrementCard={card => this.props.incrementCard(card, true)} onSelect={card => this.props.incrementCard(card, true)} title={"Sideboard (" + sideCount +  ")" + sideboardError} cards={this.props.side} onMain={card => {this.props.decrementCard(card, true); this.props.incrementCard(card)}} subtract={true} />
           <div ref={ref => this.deckSelectionRef = ref} />
-          <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Banned (Please remove all cards)" cards={banned} subtract={true} />
-          <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Too many copies (Please lower card counts)" cards={warningCopies} subtract={true} />
+          <CardSection simpleView={this.state.simpleView} deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Banned (Please remove all cards)" cards={banned} subtract={true} />
+          <CardSection simpleView={this.state.simpleView} deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title="Too many copies (Please lower card counts)" cards={warningCopies} subtract={true} />
           {warningTotalGroups.map((group, index) => {
             const title = "\"" + this.props.groups[index].groupName + "\" has too many cards (Please remove " + (group.count - this.props.groups[index].maxTotal) + " cards)";
-            return <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} usePointSystem={this.props.groups[index].usePointSystem} />
+            return <CardSection simpleView={this.state.simpleView} deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} usePointSystem={this.props.groups[index].usePointSystem} />
           })}
           {warningPointGroups.map((group, index) => {
             const title = "\"" + this.props.groups[index].groupName + "\" has too many points (Please lower points by " + (group.points - this.props.groups[index].maxPoints) + " points)";
-            return <CardSection deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} usePointSystem={this.props.groups[index].usePointSystem} />
+            return <CardSection simpleView={this.state.simpleView} deckAmount={combinedAmount} decrementCard={this.decrementSideThenDeck} title={title} cards={group.cards} key={index} subtract={true} usePointSystem={this.props.groups[index].usePointSystem} />
           })}
         </div>
       );

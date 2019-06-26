@@ -79,9 +79,7 @@ class CardObj extends Component {
                 {this.state.manaCostImage}
               </div>}
             </div>
-            {this.props.count && (
-              <Button variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)}>{this.props.count}</Button>
-            )}
+            <ButtonNumber variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)} number={this.props.count} />
             {this.props.onRemove && (
               <Button variant="danger" className="cardRemove" onClick={event => this.props.onRemove(this.props.card)}><b>-1</b></Button>
             )}        
