@@ -170,7 +170,7 @@ class FormatDetails extends Component {
         </Row>
         <hr />
         <Row className="px-4 d-block">{description}</Row>
-        <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>
+        <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} onClick={() => window.scrollTo(0, 0)} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>
         
         {!this.state.decksLoading && this.state.decks.length > 0 && <Row className="mt-5 px-2">
           <div className="fullWidth">

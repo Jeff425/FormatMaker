@@ -160,9 +160,9 @@ class DeckManager extends Component {
           {notLegal && <Button variant="danger" className="fullWidth" onClick={() => window.scrollTo(0, this.deckSelectionRef.offsetTop + this.deckSelectionRef.offsetHeight)}>Fix Deck Issues</Button>}
           <Button variant="secondary" className="fullWidth" onClick={this.props.onPurchase}>Purchase on TCGPlayer</Button>
           {this.props.publishDeck && this.props.accountState === 2 && (<ButtonGroup className="fullWidth">
-            {!cannotPublish && <Button variant="primary" className="flexShare" onClick={() => this.props.publishDeck(true)}>Publish (and Save) Deck</Button>}
-            <Button variant="info" className="flexShare" onClick={() => this.props.publishDeck(false)}>Save Deck</Button>
-            <Button variant="primary" className="flexShare" onClick={this.props.editInfo}>Edit Deck Info</Button>
+            {!cannotPublish && <Button variant="primary" className="flexShare" onClick={() => this.props.publishDeck(!cannotPublish, true)}>Publish (and Save) Deck</Button>}
+            <Button variant="info" className="flexShare" onClick={() => this.props.publishDeck(!cannotPublish, false)}>Save Deck</Button>
+            <Button variant="primary" className="flexShare" onClick={() => this.props.editInfo(!cannotPublish)}>Edit Deck Info</Button>
           </ButtonGroup>)}
           {this.props.publishDeck && this.props.accountState === 1 && <div className="fullWidth centerAlign border p-2">Verify email to publish and save this deck online. (Make sure to save first!)</div>}
           {this.props.publishDeck && !this.props.accountState && <div className="fullWidth centerAlign border p-2">Create account or sign in to publish and save this deck online. (Make sure to save first!)</div>}

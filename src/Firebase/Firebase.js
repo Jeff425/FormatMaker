@@ -336,19 +336,19 @@ class Firebase {
     if (authUser) {
       return this.db.collection("formats").where("author", "==", authUser.uid).orderBy("lastUpdate", "desc").get();
     }
-    return this.db.collection("formats").orderBy("lastUpdate", "desc").limit(25).get();
+    return this.db.collection("formats").where("hasUpdatedCards", "==", true).orderBy("lastUpdate", "desc").limit(25).get();
   }
   
   queryNewestFormats() {
-    return this.db.collection("formats").orderBy("createDate", "desc").limit(25).get();
+    return this.db.collection("formats").where("hasUpdatedCards", "==", true).orderBy("createDate", "desc").limit(25).get();
   }
   
   queryMostFavoritedFormats() {
-    return this.db.collection("formats").orderBy("favoriteCount", "desc").limit(25).get();
+    return this.db.collection("formats").where("hasUpdatedCards", "==", true).orderBy("favoriteCount", "desc").limit(25).get();
   }
   
   querySponsoredFormats() {
-    return this.db.collection("formats").where("sponsored", "==", true).orderBy("lastUpdate", "desc").get();
+    return this.db.collection("formats").where("hasUpdatedCards", "==", true).where("sponsored", "==", true).orderBy("lastUpdate", "desc").get();
   }
   
   queryFavoriteFormats() {

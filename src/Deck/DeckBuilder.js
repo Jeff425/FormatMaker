@@ -21,7 +21,7 @@ class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {error: "", isLoading: false, deckName: "", deckDescription: "", showDeckInfo: false, accountState: 0, commanderFormat: false, hasUpdatedCards: false, groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, commanderSelection: new Set(), name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
+    this.state = {canPublish: false, error: "", isLoading: false, deckName: "", deckDescription: "", showDeckInfo: false, accountState: 0, commanderFormat: false, hasUpdatedCards: false, groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, commanderSelection: new Set(), name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
     this.sort = this.sort.bind(this);
     this.addCommander = this.addCommander.bind(this);
     this.removeCommander = this.removeCommander.bind(this);
@@ -255,12 +255,14 @@ class DeckBuilder extends Component {
     this.setState({currentTab: key});
   }
   
-  publishDeck(makePublic = false) {
+  publishDeck(canPublish, makePublic = false) {
     if (!this.state.deckName || (!this.state.deckDescription && makePublic)) {
-      this.editInfo();
+      if (!this.state.showDeckInfo) {
+        this.editInfo(canPublish);
+      }
       return;
     }
-    this.setState({isLoading: true, error: ""});
+    this.setState({isLoading: true, error: "", showDeckInfo: false});
     this.props.firebase.writeDeck(makePublic, this.state.deckName, this.state.deckDescription, JSON.stringify({deckSelection: this.state.deckSelection, sideSelection: this.state.sideSelection, deckAmount: this.state.deckAmount, sideAmount: this.state.sideAmount, commanderSelection: Array.from(this.state.commanderSelection)}), this.props.match.params.formatId, this.props.match.params.deckId)
     .then(deckId => {
       this.props.history.push(ROUTES.deck + "/" + this.props.match.params.formatId + "/" + deckId);
@@ -289,8 +291,8 @@ class DeckBuilder extends Component {
     });
   }
   
-  editInfo() {
-    this.setState({showDeckInfo: !this.state.showDeckInfo});
+  editInfo(canPublish = false) {
+    this.setState({canPublish: canPublish, showDeckInfo: !this.state.showDeckInfo});
   }
   
   render() {
@@ -315,7 +317,11 @@ class DeckBuilder extends Component {
               <FormLabel>Format Description <span className="text-muted">Needed to publish the deck</span></FormLabel>
               <FormControl as="textarea" rows="5" value={this.state.deckDescription} onChange={event => this.setState({deckDescription: event.target.value})} maxLength={250} />
             </FormGroup>
-            <Button variant="primary" size="lg" className="fullWidth" onClick={this.editInfo}>Back</Button>
+            <div className="d-flex flex-row">
+              <Button variant="primary" size="lg" className="flexShare mr-1" onClick={this.editInfo}>Back</Button>
+              {this.state.canPublish && <Button variant="primary" className="flexShare mx-1" onClick={() => this.publishDeck(false, true)} disabled={!this.state.deckName || !this.state.deckDescription}>Publish</Button>}
+              <Button variant="info" className="flexShare ml-1" onClick={() => this.publishDeck(false, false)} disabled={!this.state.deckName}>Save</Button>
+            </div>
           </div>
         </div>
       );

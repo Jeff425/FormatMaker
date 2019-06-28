@@ -73,6 +73,16 @@ class OmniSearchbar extends Component {
     if(colors.length === 0) {
       return this.colorRefs.colorCheck_Colorless.checked;
     }
+    if(colors.length === 1) {
+      if (!this.colorRefs.colorCheck_Mono.checked) {
+        return false;
+      }
+    }
+    if(colors.length > 1) {
+      if (!this.colorRefs.colorCheck_Multi.checked) {
+        return false;
+      }
+    }
     for(let i = 0; i < colors.length; i++) {
       if(!this.colorRefs["colorCheck_" + colors[i]].checked) {
         return false;
@@ -119,6 +129,8 @@ class OmniSearchbar extends Component {
           <FormCheck inline label="Red" type="checkbox" ref={ref => this.colorRefs["colorCheck_R"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
           <FormCheck inline label="Green" type="checkbox" ref={ref => this.colorRefs["colorCheck_G"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
           <FormCheck inline label="Colorless" type="checkbox" ref={ref => this.colorRefs["colorCheck_Colorless"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Monocolor" type="checkbox" ref={ref => this.colorRefs["colorCheck_Mono"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
+          <FormCheck inline label="Multicolor" type="checkbox" ref={ref => this.colorRefs["colorCheck_Multi"] = ref} defaultChecked={true} onChange={this.onCheckboxChange} />
         </div>
       </div>
     );

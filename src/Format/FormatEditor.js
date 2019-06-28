@@ -51,6 +51,12 @@ class FormatEditor extends Component {
     this.props.onTabChange(key);
   }
   
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.page !== this.state.page) {
+      window.scrollTo(0, 0);
+    }
+  }
+  
   render() {  
     return (
       <div className="AppContainer">
