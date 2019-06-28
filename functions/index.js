@@ -1,5 +1,6 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const request = require('request-promise');
 admin.initializeApp();
 
 exports.updateDisplayName = functions.https.onCall((data, context) => {
@@ -17,6 +18,7 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
   const userInfoDocRef = admin.firestore().collection("users").doc(context.auth.uid);
   const formatQueryRef = admin.firestore().collection("formats").where("author", "==", context.auth.uid);
   const commentQueryRef = admin.firestore().collectionGroup("comments").where("author", "==", context.auth.uid);
+  const deckQueryRef = admin.firestore().collectionGroup("decks").where("author", "==", context.auth.uid);
   
   return admin.firestore().runTransaction(transaction => {
     
@@ -32,17 +34,23 @@ exports.updateDisplayName = functions.https.onCall((data, context) => {
         .then(formatQuery => {
           return transaction.get(commentQueryRef)
           .then(commentQuery => {
-            commentQuery.forEach(doc => {
-              transaction.update(doc.ref, {authorName: newName});
-            });
-            formatQuery.forEach(doc => {
-              transaction.update(doc.ref, {authorName: newName});
-            });
-            transaction.set(nameDocRef, {ownedBy: context.auth.uid}).set(userInfoDocRef, {displayName: newName}, {merge: true});
-            if (userInfoDoc.exists && userInfoDoc.data().displayName) {
-              transaction.delete(admin.firestore().collection("names").doc(userInfoDoc.data().displayName.toUpperCase()));
-            }
-            return {success: true};
+            return transaction.get(deckQueryRef)
+            .then(deckQuery => {
+              deckQuery.forEach(doc => {
+                transaction.update(doc.ref, {authorName: newName});
+              });
+              commentQuery.forEach(doc => {
+                transaction.update(doc.ref, {authorName: newName});
+              });
+              formatQuery.forEach(doc => {
+                transaction.update(doc.ref, {authorName: newName});
+              });
+              transaction.set(nameDocRef, {ownedBy: context.auth.uid}).set(userInfoDocRef, {displayName: newName}, {merge: true});
+              if (userInfoDoc.exists && userInfoDoc.data().displayName) {
+                transaction.delete(admin.firestore().collection("names").doc(userInfoDoc.data().displayName.toUpperCase()));
+              }
+              return {success: true};
+            });  
           });
         });
       });
@@ -108,6 +116,36 @@ exports.updateFormatInfo = functions.firestore.document("formats/{formatId}").on
     console.log("favorites changed");
     return null;
   }
+  if (change.before.data().authorName !== change.after.data().authorName) {
+    console.log("authorName changed");
+    return null;
+  }
+  if (!change.before.data().lastUpdate.isEqual(change.after.data().lastUpdate)) {
+    console.log("lastUpdate changed");
+    return null;
+  }
+  const updateStamp = admin.firestore.Timestamp.now();
+  let createStamp = updateStamp;
+  if (change.before.data().createDate) {
+    createStamp = change.before.data().createDate;
+  }
+  return change.after.ref.update({createDate: createStamp, lastUpdate: updateStamp});
+});
+
+exports.writeDeckInfo = functions.firestore.document("formats/{formatId}/decks/{deckId}").onCreate((snap, context) => {
+  const createStamp = admin.firestore.Timestamp.now();
+  let authName = "";
+  return admin.firestore().collection("users").doc(snap.data().author).get()
+  .then(authInfo => {
+    if (authInfo.exists) {
+      authName = authInfo.data().displayName;
+    }
+    return snap.ref.set({authorName: authName, createDate: createStamp, lastUpdate: createStamp, favorites: []}, {merge: true});
+  });
+});
+
+// Adds timestamps to deck
+exports.updateDeckInfo = functions.firestore.document("formats/{formatId}/decks/{deckId}").onUpdate((change, context) => {
   if (change.before.data().authorName !== change.after.data().authorName) {
     console.log("authorName changed");
     return null;
@@ -195,5 +233,39 @@ exports.deleteComment = functions.https.onCall((data, context) => {
         return reportRef.delete();
       });
     });
+  });
+});
+
+// Can also ban user
+exports.deleteDeck = functions.https.onCall((data, context) => {
+  if (!data.reportId || !data.formatId || !data.deckId) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing Arguments");
+  }
+  return checkAdmin(context).then(() => {
+    const deckRef = admin.firestore().collection("formats/" + data.formatId + "/decks").doc(data.deckId);
+    return deckRef.get().then(comment => {
+      const author = comment.data().author;
+      return deckRef.delete().then(() => {
+        return admin.storage().bucket().file("deck/" + author + "/" + data.formatId + "/" + data.deckId + ".formatDeck").delete().then(() => {
+          const reportRef = admin.firestore().collection("deckReports").doc(data.reportId);
+          if (data.banUser === true) {
+            return admin.firestore().collection("users").doc(author).set({banned: true}, {merge: true}).then(() => reportRef.delete());
+          }
+          return reportRef.delete();
+        });
+      });
+    });
+  });
+});
+
+exports.scryfallCollection = functions.https.onCall((data, context) => {
+  if (!data.scryfallBody) {
+    throw new functions.https.HttpsError("invalid-argument", "Missing Arguments");
+  }
+  return request({
+    method: "POST",
+    uri: "https://api.scryfall.com/cards/collection",
+    body: data.scryfallBody,
+    json: true
   });
 });
