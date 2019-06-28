@@ -25,6 +25,8 @@ class NavigationBar extends Component {
             this.setState({isAdmin: true});
           }
         });
+      } else {
+        this.setState({authUser: null, isAdmin: false});
       }
     });
   }
@@ -64,6 +66,9 @@ class NavigationBar extends Component {
             }
             {this.state.authUser &&
               <Nav.Link as={NavLink} to={ROUTES.ownformat} onClick={this.onNavigation}>Your Formats</Nav.Link>
+            }
+            {this.state.authUser &&
+              <Nav.Link as={NavLink} to={ROUTES.owndecks} onClick={this.onNavigation}>Your Decks</Nav.Link>
             }
             {this.state.authUser &&
               <Nav.Link as={NavLink} to={ROUTES.accountinfo} onClick={this.onNavigation}>Account</Nav.Link>

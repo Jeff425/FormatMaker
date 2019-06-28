@@ -366,7 +366,7 @@ class FormatBuilderBase extends Component {
     if (this.state.showInfo) {
       return (
         <div className="main-page">
-          {this.state.error && <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3" onClose={() => this.setState({error: ""})}>
+          {this.state.error && <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3 mt-2" onClose={() => this.setState({error: ""})}>
             <Alert.Heading>Error with format</Alert.Heading>
             <p>{this.state.error}</p>
           </Alert>}
@@ -427,13 +427,13 @@ class FormatBuilderBase extends Component {
     return (
       <Container fluid>
         {this.state.error && <Row>
-          <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3" onClose={() => this.setState({error: ""})}>
+          <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3 mt-2" onClose={() => this.setState({error: ""})}>
             <Alert.Heading>Error with format</Alert.Heading>
             <p>{this.state.error}</p>
           </Alert>
         </Row>}
         {this.state.didSucceed && <Row>
-          <Alert dismissible variant="success" className="fullWidth ml-3 mr-3" onClose={() => this.setState({didSucceed: false})}>
+          <Alert dismissible variant="success" className="fullWidth ml-3 mr-3 mt-2" onClose={() => this.setState({didSucceed: false})}>
             <Alert.Heading>Success!</Alert.Heading>
             <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={ROUTES.format + "/" + this.props.match.params.formatId}>directly</Link> or you may view the landing page for your format <Link to={ROUTES.formatdetails + "/" + this.props.match.params.formatId}>here.</Link> (Copy that link and send it to your friends!)</p>
           </Alert>      

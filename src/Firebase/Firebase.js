@@ -21,6 +21,7 @@ class Firebase {
     this.db = app.firestore();
     this.storage = app.storage();
     this.functions = app.functions();
+    
     this.createUser = this.createUser.bind(this);
     this.signIn = this.signIn.bind(this);
     this.signOut = this.signOut.bind(this);
@@ -28,6 +29,15 @@ class Firebase {
     this.passwordUpdate = this.passwordUpdate.bind(this);
     this.displayNameUpdate = this.displayNameUpdate.bind(this);
     this.getUserInfo = this.getUserInfo.bind(this);
+    this.writeDeck = this.writeDeck.bind(this);
+    this.readDeck = this.readDeck.bind(this);
+    this.queryNewestDecks = this.queryNewestDecks.bind(this);
+    this.queryYourDecks = this.queryYourDecks.bind(this);
+    this.deleteDeck = this.deleteDeck.bind(this);
+    this.reportDeck = this.reportDeck.bind(this);
+    this.queryDeckReports = this.queryDeckReports.bind(this);
+    this.ignoreDeckReport = this.ignoreDeckReport.bind(this);
+    this.deleteDeckAdmin = this.deleteDeckAdmin.bind(this);
     this.writeFormat = this.writeFormat.bind(this);
     this.readFormat = this.readFormat.bind(this);
     this.getFormatMetadata = this.getFormatMetadata.bind(this);
@@ -108,6 +118,140 @@ class Firebase {
     });
   }
   
+  // Promises
+  writeDeck(makePublic, deckName, deckDesc, deckString, formatId, deckId = null) {
+    ReactGA.event({category: "Deck", action: (deckId ? "Updated deck " + deckId : "Created new deck")});
+    return new Promise((resolve, reject) => {
+      if (!this.auth.currentUser || !this.auth.currentUser.emailVerified) {
+        reject("Error submitting deck: Must be logged in and verify email");
+        return;
+      }
+      const uid = this.auth.currentUser.uid;
+      const formatRef = this.db.collection("formats/" + formatId + "/decks");
+      (deckId ? formatRef.doc(deckId).update({publicDeck: makePublic, deckName: deckName, deckDesc: deckDesc, formatId: formatId}) : formatRef.add({author: uid, publicDeck: makePublic, deckName: deckName, deckDesc: deckDesc, formatId: formatId}))
+      .then(docRef => {
+        const deckRef = this.storage.ref().child("deck/" + uid + "/" + formatId + "/" + (deckId ? deckId : docRef.id) + ".formatDeck");
+        deckRef.putString(deckString)
+        .then(snapshot => {
+          resolve(deckId ? deckId : docRef.id);
+        })
+        .catch(error => {
+          if (deckId) {
+            reject("Error updating deck: " + error.code);
+          } else {
+            docRef.delete()
+            .then(() => {
+              reject("Error submitting deck: " + error.code);
+            })
+            .catch(error2 => {
+              reject("Error submitting deck, please contact me (Email or Discord) and let me know there was an error removing deck details for: " + docRef.id + " and give these error codes: " + error.code + " " + error2.code);
+            });
+          }
+        });
+      })
+      .catch(error => {
+        reject("Error submitting deck: " + error.code);
+      });
+    });
+  }
+  
+  readDeck(formatId, deckId, checkAuth = false) {
+    return new Promise((resolve, reject) => {
+      if (!formatId) {
+        reject("Error reading deck: not valid format");
+        return;
+      }
+      if (!deckId) {
+        reject("Error reading deck: not valid deck");
+        return;
+      }
+      if (checkAuth && !this.auth.currentUser) {
+        reject("Error reading deck: Not author of deck");
+        return;
+      }
+      this.db.collection("formats/" + formatId + "/decks").doc(deckId).get()
+      .then(doc => {
+        if (!doc.exists) {
+          reject("Error reading deck: could not find deck");
+          return;
+        }
+        if (checkAuth && this.auth.currentUser.uid !== doc.data().author) {
+          reject("Error reading deck: Not author of deck");
+          return;
+        }
+        this.storage.ref().child("deck/" + doc.data().author + "/" + formatId + "/" + deckId + ".formatDeck").getDownloadURL()
+        .then(url => {
+          fetch(url)
+          .then(result => {
+            result.text().then(data => {
+              resolve({deckName: doc.data().deckName, deckDescription: doc.data().deckDesc, authorName: doc.data().authorName, deckText: data});
+            });
+          })
+          .catch(error => {
+            reject("Error reading deck: " + error.code);
+          });
+        })
+        .catch(error => {
+          reject("Error reading deck: " + error.code);
+        });
+      })
+      .catch(error => {
+        reject("Error reading deck: " + error.code);
+      });
+    });
+  }
+  
+  queryNewestDecks(formatId, limit = 25) {
+    return this.db.collection("formats/" + formatId + "/decks").where("publicDeck", "==", true).orderBy("createDate", "desc").limit(limit).get();
+  }
+  
+  queryYourDecks() {
+    if (!this.auth.currentUser) {
+      return;
+    }
+    return this.db.collectionGroup("decks").where("author", "==", this.auth.currentUser.uid).orderBy("lastUpdate", "desc").get();
+  }
+  
+  deleteDeck(formatId, deckId) {
+    ReactGA.event({category: "Deck", action: "Deleting Deck"});
+    return new Promise((resolve, reject) => {
+      this.storage.ref().child("deck/" + this.auth.currentUser.uid + "/" + formatId + "/" + deckId + ".formatDeck").delete()
+      .then(() => {
+        this.db.collection("formats/" + formatId + "/decks").doc(deckId).delete()
+        .then(() => {
+          resolve("Success!");
+        })
+        .catch(error => {
+          reject("Error deleting deck information: " + error.code);
+        });
+      })
+      .catch(error => {
+        reject("Error deleting deck data: " + error.code);
+      });
+    });
+  }
+  
+  reportDeck(formatId, deckId, description) {
+    return this.db.collection("deckReports").add({formatId: formatId, deckId: deckId, description: description, date: app.firestore.Timestamp.now(), unread: true});
+  }
+  
+  queryDeckReports(unreadOnly) {
+    if (unreadOnly) {
+      return this.db.collection("deckReports").where("unread", "==", true).orderBy("date", "desc").get();
+    }
+    return this.db.collection("deckReports").orderBy("date", "desc").get();
+  }
+  
+  ignoreDeckReport(reportId) {
+    return this.db.collection("deckReports").doc(reportId).update({unread: false});
+  }
+  
+  deleteDeckAdmin(reportId, formatId, deckId, banUser) {
+    const deleteDeckAdminCallable = this.functions.httpsCallable("deleteDeck");
+    return deleteDeckAdminCallable({reportId: reportId, formatId: formatId, deckId, banUser: banUser});
+  }
+  
+  // Callbacks
   writeFormat(authUser, name, desc, longDesc, hasUpdatedCards, commanderFormat, formatString, successFunc, errorFunc, firebaseId = null) {
     ReactGA.event({category: "Format", action: (firebaseId ? "Updated format " + firebaseId : "Created new format")});
     if (authUser === null) {

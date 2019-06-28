@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import ReactGA from 'react-ga';
-import { saveAs } from 'file-saver';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -10,16 +9,19 @@ import FormGroup from 'react-bootstrap/FormGroup';
 import FormLabel from 'react-bootstrap/FormLabel';
 import FormControl from 'react-bootstrap/FormControl';
 import FormCheck from 'react-bootstrap/FormCheck';
+import Alert from 'react-bootstrap/Alert';
+import { Link, withRouter } from 'react-router-dom';
 import CardSelection from './CardSelection';
 import DeckManager from './DeckManager';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
+import { saveDeckFile, purchaseDeck } from './DeckUtils';
 
 class DeckBuilder extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {commanderFormat: false, hasUpdatedCards: false, groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, commanderSelection: new Set(), name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
+    this.state = {error: "", isLoading: false, deckName: "", deckDescription: "", showDeckInfo: false, accountState: 0, commanderFormat: false, hasUpdatedCards: false, groups: [], currentTab: "legal", formatIds: {}, sortingFunc: null, deckSelection: [], deckAmount: {}, sideSelection: [], sideAmount: {}, commanderSelection: new Set(), name: "", desc: "", deckMin: 0, deckMax: 0, sideboardAllowed: false, sideMin: 0, sideMax: 0, showSave: false, fileName: "customDeck", fileType: 0};
     this.sort = this.sort.bind(this);
     this.addCommander = this.addCommander.bind(this);
     this.removeCommander = this.removeCommander.bind(this);
@@ -32,12 +34,39 @@ class DeckBuilder extends Component {
     this.successRead = this.successRead.bind(this);
     this.errorRead = this.errorRead.bind(this);
     this.purchaseDeck = this.purchaseDeck.bind(this);
-    this.deckString = this.deckString.bind(this);
+    this.publishDeck = this.publishDeck.bind(this);
+    this.editInfo = this.editInfo.bind(this);
   }
   
   componentDidMount() {
     ReactGA.pageview(ROUTES.deck + "/" + this.props.match.params.formatId);
     this.props.firebase.readFormat(this.props.match.params.formatId, this.successRead, this.errorRead);
+    this.listener = this.props.firebase.auth.onAuthStateChanged(auth => {
+      if (auth) {
+        if (!auth.emailVerified) {
+          this.setState({accountState: 1, isLoading: false});
+          if (this.props.match.params.deckId) {
+            this.props.history.push(ROUTES.deck + "/" + this.props.match.params.formatId);
+          }
+        } else {
+          this.setState({accountState: 2});
+          if (!this.props.match.params.deckId) {
+            this.setState({isLoading: false});
+          } else {
+            this.readDeck();
+          }
+        }
+      } else {
+        this.setState({accountState: 0, isLoading: false});
+        if (this.props.match.params.deckId) {
+          this.props.history.push(ROUTES.deck + "/" + this.props.match.params.formatId);
+        }
+      }
+    });
+  }
+  
+  componentWillUnmount() {
+    this.listener();
   }
   
   successRead(name, desc, longDesc, hasUpdatedCards, commanderFormat, formatText) {
@@ -147,63 +176,9 @@ class DeckBuilder extends Component {
     }
   }
   
-  urlDeckString() {
-    let saveString = "";
-    this.state.deckSelection.forEach(card => {
-      saveString += this.state.deckAmount[card.name] + " " + (card.searchName ? card.searchName : card.name) + "||";
-    });
-    if (this.state.sideSelection.length > 0) {
-      this.state.sideSelection.forEach(card => {
-        saveString += this.state.sideAmount[card.name] + " " + (card.searchName ? card.searchName : card.name) + "||";
-      });
-    }
-    return saveString.substring(0, saveString.length - 2);
-  }
-  
-  deckString() {
-    let saveString = "";
-    this.state.deckSelection.forEach(card => {
-      saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
-    });
-    if (this.state.sideSelection.length > 0) {
-      saveString += "//Sideboard\n";
-      this.state.sideSelection.forEach(card => {
-        saveString += this.state.sideAmount[card.name] + " " + card.name + "\n";
-      });
-    }
-    if (this.state.commanderSelection.size > 0) {
-      saveString += "//Commander\n";
-      this.state.commanderSelection.forEach(cardName => {
-        if (this.state.deckAmount[cardName]) {
-          saveString += "1 " + cardName + "\n";
-        }
-      });
-    }
-    return saveString.substring(0, saveString.length - 1);
-  }
-  
-  cockatriceDeckString() {
-    let saveString = "";
-    this.state.deckSelection.forEach(card => {
-      saveString += this.state.deckAmount[card.name] + " " + card.name + "\n";
-    });
-    this.state.sideSelection.forEach(card => {
-      saveString += "SB: " + this.state.sideAmount[card.name] + " " + card.name + "\n";
-    });
-    this.state.commanderSelection.forEach(cardName => {
-      saveString += "CM: 1 " + cardName + "\n";
-    });
-    return saveString.substring(0, saveString.length - 1);
-  }
-  
   // Actually Saves the file
   saveDeckFile() {
-    if (!this.state.fileName) {
-      return;
-    }
-    const saveString = this.state.fileType === 0 ? this.cockatriceDeckString() : this.deckString();
-    const blob = new Blob([saveString], {type: "plain/text"});
-    saveAs(blob, this.state.fileName + (this.state.fileType === 0 ? ".txt" : ".deck"));
+    saveDeckFile(this.state.fileName, this.state.fileType, this.state.deckSelection, this.state.deckAmount, this.state.sideSelection, this.state.sideAmount, this.state.commanderSelection);
     this.setState({showSave: false});
   }
   
@@ -272,102 +247,164 @@ class DeckBuilder extends Component {
   }
   
   purchaseDeck() {
-    /* Temporarily doing GET request. Once TCGPlayer helps with POST requests I can switch back.
-    fetch("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker", {
-      method: "POST",
-      headers: {
-        "Accept": "text/html",
-        "Content-Type": "text/plain;charset=UTF-8",
-      },
-      body: "c=" + "1%20Manalith"//this.deckString(true)
-    })
-    .then(console.log);
-    */
     ReactGA.event({category: "Affiliate Link", action: "TCGPlayer", label: this.props.match.params.formatId});
-    window.open("https://store.tcgplayer.com/massentry?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&c=" + this.urlDeckString(), "_blank");
+    purchaseDeck(this.state.deckSelection, this.state.deckAmount, this.state.sideSelection, this.state.sideAmount);
   }
   
   onTabChange(key) {
     this.setState({currentTab: key});
   }
   
+  publishDeck(makePublic = false) {
+    if (!this.state.deckName || (!this.state.deckDescription && makePublic)) {
+      this.editInfo();
+      return;
+    }
+    this.setState({isLoading: true, error: ""});
+    this.props.firebase.writeDeck(makePublic, this.state.deckName, this.state.deckDescription, JSON.stringify({deckSelection: this.state.deckSelection, sideSelection: this.state.sideSelection, deckAmount: this.state.deckAmount, sideAmount: this.state.sideAmount, commanderSelection: Array.from(this.state.commanderSelection)}), this.props.match.params.formatId, this.props.match.params.deckId)
+    .then(deckId => {
+      this.props.history.push(ROUTES.deck + "/" + this.props.match.params.formatId + "/" + deckId);
+      this.setState({writeSucceed: true, isLoading: false});
+    })
+    .catch(errorMsg => {
+      this.setState({isLoading: false, error: errorMsg});
+    });
+  }
+  
+  readDeck() {
+    if (!this.props.match.params.formatId || !this.props.match.params.deckId) {
+      return;
+    }
+    this.setState({isLoading: true, error: ""});
+    this.props.firebase.readDeck(this.props.match.params.formatId, this.props.match.params.deckId, true)
+    .then(deckData => {
+      const deckName = deckData.deckName;
+      const deckDescription = deckData.deckDescription;
+      const deck = JSON.parse(deckData.deckText);
+      this.setState({isLoading: false, deckName: deckName, deckDescription: deckDescription, deckSelection: deck.deckSelection, sideSelection: deck.sideSelection, deckAmount: deck.deckAmount, sideAmount: deck.sideAmount, commanderSelection: new Set(deck.commanderSelection)});
+    })
+    .catch(errorMsg => {
+      this.setState({isLoading: false, error: errorMsg});
+      this.props.history.push(ROUTES.deck + "/" + this.props.match.params.formatId);
+    });
+  }
+  
+  editInfo() {
+    this.setState({showDeckInfo: !this.state.showDeckInfo});
+  }
+  
   render() {
-    if (this.state.groups.length > 0) {
+    if (this.state.groups.length === 0 || this.state.isLoading) {
       return (
-        <Container fluid>
-          <Row>
-            <Col lg>
-              <CardSelection 
-                sortPass={this.sort} 
-                addCard={this.addCard} 
-                groups={this.state.groups}
-                tabKey={this.state.currentTab}
-                onTabChange={this.onTabChange}
-                formatName={this.state.name}
-                formatDesc={this.state.desc}
-                deckMin={this.state.deckMin}
-                deckMax={this.state.deckMax}
-                sideboardAllowed={this.state.sideboardAllowed}
-                sideMin={this.state.sideMin}
-                sideMax={this.state.sideMax}
-                commanderFormat={this.state.commanderFormat}
-                deckAmount={this.state.deckAmount}
-                sideAmount={this.state.sideAmount}
-                addCommander={this.addCommander}
-              />
-            </Col>
-            <Col lg>
-              <DeckManager 
-                deck={this.state.deckSelection} 
-                deckAmount={this.state.deckAmount}
-                side={this.state.sideSelection}
-                sideAmount={this.state.sideAmount}
-                incrementCard={this.addCard} 
-                decrementCard={this.removeCard} 
-                onSave={this.saveDeck} 
-                onLoad={this.loadDeck} 
-                groups={this.state.groups}
-                formatIds={this.state.formatIds}
-                onPurchase={this.purchaseDeck}
-                deckMin={this.state.deckMin}
-                deckMax={this.state.deckMax}
-                sideboardAllowed={this.state.sideboardAllowed}
-                sideMin={this.state.sideMin}
-                sideMax={this.state.sideMax}
-                commanderSelection={this.state.commanderSelection}
-                removeCommander={this.removeCommander}
-              />
-            </Col>
-          </Row>
-          
-          <Modal show={this.state.showSave} onHide={event => this.setState({showSave: false})}>
-            <Modal.Header closeButton>
-              <Modal.Title>Save Format</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-              <FormGroup>
-                <FormLabel>File Name:</FormLabel>
-                <FormControl placeholder="Enter File Name:"  value={this.state.fileName} onChange={event => this.setState({fileName: event.target.value})} />
-              </FormGroup>
-              <FormLabel>File Type:</FormLabel>
-              <div>
-                <FormCheck inline type="radio" label=".txt" checked={this.state.fileType === 0} onChange={event => event.target.checked && this.setState({fileType: 0})} data-toggle={this.state.commanderFormat ? "tooltip" : ""} title={this.state.commanderFormat ? "Saving in another program will overwrite commander selection" : ""} />
-                <FormCheck inline type="radio" label=".deck" checked={this.state.fileType === 1} onChange={event => event.target.checked && this.setState({fileType: 1})} />
-              </div>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="success" onClick={this.saveDeckFile}>Save Format</Button>
-            </Modal.Footer>
-          </Modal>
-        </Container>
+        <div className="main-page">
+          <img className="mt-4" src={process.env.PUBLIC_URL + "/loader.gif"} alt="loading" />
+        </div>
       );
     }
+    if (this.state.showDeckInfo) {
+      return (
+        <div className="main-page">
+          <div className="singleApp">
+            <h1>Edit Deck Info</h1>
+            <h5 className="text-muted">Please give a name and a description to the deck</h5>
+            <FormGroup>
+              <FormLabel>Format Name <span className="text-muted">Needed to save and publish the deck</span></FormLabel>
+              <FormControl placeholder="Enter Name Here" value={this.state.deckName} onChange={event => this.setState({deckName: event.target.value})} maxLength={25} />
+            </FormGroup>
+            <FormGroup>
+              <FormLabel>Format Description <span className="text-muted">Needed to publish the deck</span></FormLabel>
+              <FormControl as="textarea" rows="5" value={this.state.deckDescription} onChange={event => this.setState({deckDescription: event.target.value})} maxLength={250} />
+            </FormGroup>
+            <Button variant="primary" size="lg" className="fullWidth" onClick={this.editInfo}>Back</Button>
+          </div>
+        </div>
+      );
+    }
+    
     return (
-      <div className="main-page">
-        <img className="mt-4" src={process.env.PUBLIC_URL + "/loader.gif"} alt="loading" />
-      </div>
-    );
+      <Container fluid>
+        {this.state.error && <Row>
+          <Alert dismissible variant="danger" className="fullWidth ml-3 mr-3 mt-2" onClose={() => this.setState({error: ""})}>
+            <Alert.Heading>Error with deck</Alert.Heading>
+            <p>{this.state.error}</p>
+          </Alert>
+        </Row>}
+        {this.state.writeSucceed && <Row>
+          <Alert dismissible variant="success" className="fullWidth ml-3 mr-3 mt-2" onClose={() => this.setState({writeSucceed: false})}>
+            <Alert.Heading>Success!</Alert.Heading>
+            <p>This deck can be found under <Link to="/owndecks">Your Decks</Link>, found <Link to={ROUTES.deck + "/" + this.props.match.params.formatId + "/" + this.props.match.params.deckId}>directly</Link> or you may view the landing page for your deck <Link to={ROUTES.deckdetails + "/" + this.props.match.params.formatId + "/" + this.props.match.params.deckId}>here.</Link> (Copy that link and send it to your friends!)</p>
+          </Alert>      
+        </Row>}
+        <Row>
+          <Col lg>
+            <CardSelection 
+              sortPass={this.sort} 
+              addCard={this.addCard} 
+              groups={this.state.groups}
+              tabKey={this.state.currentTab}
+              onTabChange={this.onTabChange}
+              formatName={this.state.name}
+              formatDesc={this.state.desc}
+              deckMin={this.state.deckMin}
+              deckMax={this.state.deckMax}
+              sideboardAllowed={this.state.sideboardAllowed}
+              sideMin={this.state.sideMin}
+              sideMax={this.state.sideMax}
+              commanderFormat={this.state.commanderFormat}
+              deckAmount={this.state.deckAmount}
+              sideAmount={this.state.sideAmount}
+              addCommander={this.addCommander}
+            />
+          </Col>
+          <Col lg>
+            <DeckManager 
+              deck={this.state.deckSelection} 
+              deckAmount={this.state.deckAmount}
+              side={this.state.sideSelection}
+              sideAmount={this.state.sideAmount}
+              incrementCard={this.addCard} 
+              decrementCard={this.removeCard} 
+              onSave={this.saveDeck} 
+              onLoad={this.loadDeck} 
+              groups={this.state.groups}
+              formatIds={this.state.formatIds}
+              onPurchase={this.purchaseDeck}
+              deckMin={this.state.deckMin}
+              deckMax={this.state.deckMax}
+              sideboardAllowed={this.state.sideboardAllowed}
+              sideMin={this.state.sideMin}
+              sideMax={this.state.sideMax}
+              commanderSelection={this.state.commanderSelection}
+              removeCommander={this.removeCommander}
+              accountState={this.state.accountState}
+              publishDeck={this.state.hasUpdatedCards ? this.publishDeck : null}
+              editInfo={this.editInfo}
+            />
+          </Col>
+        </Row>
+        
+        <Modal show={this.state.showSave} onHide={event => this.setState({showSave: false})}>
+          <Modal.Header closeButton>
+            <Modal.Title>Save Format</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <FormGroup>
+              <FormLabel>File Name:</FormLabel>
+              <FormControl placeholder="Enter File Name:"  value={this.state.fileName} onChange={event => this.setState({fileName: event.target.value})} />
+            </FormGroup>
+            <FormLabel>File Type:</FormLabel>
+            <div>
+              <FormCheck inline type="radio" label=".txt" checked={this.state.fileType === 0} onChange={event => event.target.checked && this.setState({fileType: 0})} data-toggle={this.state.commanderFormat ? "tooltip" : ""} title={this.state.commanderFormat ? "Saving in another program will overwrite commander selection" : ""} />
+              <FormCheck inline type="radio" label=".deck" checked={this.state.fileType === 1} onChange={event => event.target.checked && this.setState({fileType: 1})} />
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="success" onClick={this.saveDeckFile}>Save Format</Button>
+          </Modal.Footer>
+        </Modal>
+      </Container>
+    );    
   }
 }
 
-export default withFirebase(DeckBuilder);
+export default withFirebase(withRouter(DeckBuilder));

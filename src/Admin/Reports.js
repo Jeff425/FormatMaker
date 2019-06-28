@@ -9,11 +9,13 @@ class Reports extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {isLoading: true, formatReports: [], isLoadingComments: true, commentReports: []}
+    this.state = {isLoading: true, formatReports: [], isLoadingComments: true, commentReports: [], isLoadingDecks: true, deckReports: []};
     this.ignoreReport = this.ignoreReport.bind(this);
     this.deleteFormat = this.deleteFormat.bind(this);
     this.ignoreCommentReport = this.ignoreCommentReport.bind(this);
     this.deleteComment = this.deleteComment.bind(this);
+    this.ignoreDeckReport = this.ignoreDeckReport.bind(this);
+    this.deleteDeck = this.deleteDeck.bind(this);
   }
   
   componentDidMount() {
@@ -37,7 +39,17 @@ class Reports extends Component {
             report.id = doc.id;
             return report;
           });
-          this.setState({isLoading: false, commentReports: reports});
+          this.setState({isLoadingComments: false, commentReports: reports});
+        });
+        this.props.firebase.queryDeckReports(true)
+        .then(result => result.docs)
+        .then(reportQuery => {
+          const reports = reportQuery.filter(doc => doc.exists).map(doc => {
+            const report = {...doc.data()};
+            report.id = doc.id;
+            return report;
+          });
+          this.setState({isLoadingDecks: false, deckReports: reports});
         });
       }
     });
@@ -67,8 +79,18 @@ class Reports extends Component {
     this.props.firebase.deleteCommentAdmin(reportId, formatId, commentId, banUser);
   }
   
+  ignoreDeckReport(reportId) {
+    this.setState({deckReports: this.state.deckReports.filter(report => report.id !== reportId)});
+    this.props.firebase.ignoreDeckReport(reportId);
+  }
+  
+  deleteDeck(reportId, formatId, deckId, banUser) {
+    this.setState({deckReports: this.state.deckReports.filter(report => report.id !== reportId)});
+    this.props.firebase.deleteDeckAdmin(reportId, formatId, deckId, banUser);
+  }
+  
   render() {
-    if (this.state.isLoading) {
+    if (this.state.isLoading || this.state.isLoadingComments) {
       return (
         <div className="main-page">
           <img className="mt-4" src={process.env.PUBLIC_URL + "/loader.gif"} alt="loading" />
@@ -104,6 +126,21 @@ class Reports extends Component {
                 <Button variant="link" onClick={event => this.ignoreCommentReport(report.id)}>Ignore Report</Button>
                 <Button variant="link" onClick={event => this.deleteComment(report.id, report.formatId, report.commentId, false)}>Delete Comment</Button>
                 <Button variant="link" onClick={event => this.deleteComment(report.id, report.formatId, report.commentId, true)}>Ban User</Button>
+              </div>
+            </Card.Body>
+          </Card>
+        ))}
+        </div>
+        <div className="d-flex flex-row flex-wrap">
+        {this.state.deckReports.map(report => (
+          <Card key={report.id} className="reportCard ml-3 mr-3 mt-3">
+            <Card.Body className="d-flex flex-column">
+              <Link to={ROUTES.deckdetails + "/" + report.formatId + "/" + report.deckId} target="_blank"><Card.Title>Deck {report.deckId}</Card.Title></Link>
+              <Card.Text>{report.description}</Card.Text>
+              <div className="d-flex justify-content-between mt-auto align-items-center">
+                <Button variant="link" onClick={event => this.ignoreDeckReport(report.id)}>Ignore Report</Button>
+                <Button variant="link" onClick={event => this.deleteDeck(report.id, report.formatId, report.deckId, false)}>Delete Deck</Button>
+                <Button variant="link" onClick={event => this.deleteDeck(report.id, report.formatId, report.deckId, true)}>Ban User</Button>
               </div>
             </Card.Body>
           </Card>

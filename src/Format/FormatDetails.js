@@ -18,7 +18,7 @@ class FormatDetails extends Component {
   
   constructor(props) {
     super(props);
-    this.state = {formatData: null, isLoading: true, commentsLoading: true, comments: [], displayName: "", commentMessage: "", disablePostComment: false, temporaryFavorite: 0, authUser: null, sendingFavorite: false, newFavorite: null, showReportForm: false, reportReason: "", disableReport: false, reportFeedback: ""};
+    this.state = {formatData: null, isLoading: true, commentsLoading: true, decksLoading: true, comments: [], displayName: "", commentMessage: "", disablePostComment: false, temporaryFavorite: 0, authUser: null, sendingFavorite: false, newFavorite: null, showReportForm: false, reportReason: "", disableReport: false, reportFeedback: ""};
     this.loadComments = this.loadComments.bind(this);
     this.writeComment = this.writeComment.bind(this);
     this.deleteComment = this.deleteComment.bind(this);
@@ -46,9 +46,12 @@ class FormatDetails extends Component {
             }
           });
         }
+      } else {
+        this.setState({authUser: null});
       }
     });
     this.loadComments();
+    this.loadDecks();
   }
   
   componentWillUnmount() {
@@ -68,12 +71,26 @@ class FormatDetails extends Component {
     });
   }
   
+  loadDecks() {
+    this.props.firebase.queryNewestDecks(this.props.match.params.formatId, 10)
+    .then(result => result.docs)
+    .then(decks => {
+      const decksList = [];
+      for (let i = 0; i < decks.length; i += 5) {
+        decksList.push(decks.slice(i, i + 5).map(deck => {
+          return {name: deck.data().deckName, id: deck.id, authorName: deck.data().authorName};
+        }));
+      }
+      this.setState({decks: decksList, decksLoading: false});
+    });    
+  }
+  
   writeComment(text, commentId = null) {
     this.setState({disablePostComment: true});
     return new Promise((resolve, reject) => {
       this.props.firebase.writeComment(this.props.match.params.formatId, this.state.authUser.uid, this.state.displayName, text, commentId)
       .then(() => {
-        // Have to wait three second for the value to be in the collection (and it might not be enough!)
+        // Have to wait four second for the value to be in the collection (and it might not be enough!)
         setTimeout(() => this.loadComments().then(() => {
           this.setState({disablePostComment: false, commentMessage: ""});
           resolve();
@@ -154,6 +171,20 @@ class FormatDetails extends Component {
         <hr />
         <Row className="px-4 d-block">{description}</Row>
         <Row className="mt-5"><Link to={ROUTES.deck + "/" + this.props.match.params.formatId} className="mx-auto"><Button size="lg">Create a Deck for this format</Button></Link></Row>
+        
+        {!this.state.decksLoading && this.state.decks.length > 0 && <Row className="mt-5 px-2">
+          <div className="fullWidth">
+            <h3 className="mb-0">Decks <small className="text-muted">Sorted by Newest</small></h3>
+            <hr />
+            {this.state.decks.map((deckColumn, columnIndex) => {
+              return (<Col key={columnIndex}>
+                {deckColumn.map((deck, deckIndex) => {
+                  return <Row className="align-items-baseline mb-1 h4" key={deckIndex}><div className="mr-2">{(deckIndex + (columnIndex * 5) + 1) + "."}</div><Link to={ROUTES.deckdetails + "/" + this.props.match.params.formatId + "/" + deck.id}>{deck.name}</Link><small className="ml-1 text-muted">{deck.authorName}</small></Row>
+                })}
+              </Col>);
+            })}
+          </div>
+        </Row>}
         
         {!this.state.commentsLoading && <Row className="mt-5 px-2">
           <div className="fullWidth">

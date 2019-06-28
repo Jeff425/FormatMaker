@@ -7,22 +7,7 @@ import Col from 'react-bootstrap/Col';
 import FormCheck from 'react-bootstrap/FormCheck';
 import CardObj from './../CardObj';
 import TitledDivider from './TitledDivider';
-
-function CardSection(props) {
-  if (!props.cards || props.cards.length < 1) {
-    return null;
-  }
-  return (
-    <div className="viewport fullWidth mt-3">
-      <TitledDivider title={props.title} />
-      <div className="fullWidth centerAlign">
-        {props.cards.map(card => {
-          return <CardObj simpleView={props.simpleView} card={card} key={card.name} count={props.deckAmount ? props.deckAmount[card.name] : 0} onRemove={props.decrementCard} onIncrement={props.incrementCard} onMain={props.onMain} subtract={props.subtract} usePointSystem={props.usePointSystem} />
-        })}
-      </div>
-    </div>
-  );
-}
+import CardSection from './CardSection';
 
 class DeckManager extends Component {
   
@@ -34,7 +19,7 @@ class DeckManager extends Component {
     this.removeCommander = this.removeCommander.bind(this);
     this.deckLoadRef = null;
     this.deckSelectionRef = null;
-    this.state = {simpleView: true};
+    this.state = {simpleView: !!props.publishDeck};
   }
   
   typeCount(typeString) {
@@ -161,17 +146,26 @@ class DeckManager extends Component {
     const commanders = this.props.deck ? this.props.deck.filter(card => this.props.commanderSelection.has(card.name)) : [];
     const deck = this.props.deck ? this.props.deck.filter(card => !this.props.commanderSelection.has(card.name)) : [];
     
+    const cannotPublish = notLegal || !!deckSizeError || !!sideboardError;
+    
     if (this.props.deck && (this.props.deck.length > 0 || this.props.side.length > 0)) {
       return (
         <div className="AppContainer">
           <input type="file" ref={ref => this.deckLoadRef = ref} className="hidden" onChange={this.props.onLoad} accept=".deck,.txt" />
           <h1>Deck Manager</h1>
           <ButtonGroup className="fullWidth mt-4">
-            <Button variant="primary" onClick={this.props.onSave}>Export Deck</Button>
-            <Button variant="primary" onClick={() => this.deckLoadRef.click()}>Import Deck</Button>
+            <Button variant="primary" className="flexShare" onClick={this.props.onSave}>Export Deck</Button>
+            <Button variant="primary" className="flexShare" onClick={() => this.deckLoadRef.click()}>Import Deck</Button>
           </ButtonGroup>
           {notLegal && <Button variant="danger" className="fullWidth" onClick={() => window.scrollTo(0, this.deckSelectionRef.offsetTop + this.deckSelectionRef.offsetHeight)}>Fix Deck Issues</Button>}
           <Button variant="secondary" className="fullWidth" onClick={this.props.onPurchase}>Purchase on TCGPlayer</Button>
+          {this.props.publishDeck && this.props.accountState === 2 && (<ButtonGroup className="fullWidth">
+            {!cannotPublish && <Button variant="primary" className="flexShare" onClick={() => this.props.publishDeck(true)}>Publish (and Save) Deck</Button>}
+            <Button variant="info" className="flexShare" onClick={() => this.props.publishDeck(false)}>Save Deck</Button>
+            <Button variant="primary" className="flexShare" onClick={this.props.editInfo}>Edit Deck Info</Button>
+          </ButtonGroup>)}
+          {this.props.publishDeck && this.props.accountState === 1 && <div className="fullWidth centerAlign border p-2">Verify email to publish and save this deck online. (Make sure to save first!)</div>}
+          {this.props.publishDeck && !this.props.accountState && <div className="fullWidth centerAlign border p-2">Create account or sign in to publish and save this deck online. (Make sure to save first!)</div>}
           <Container fluid className="bottomExtension">
             <Row>
               <Col className={deckSizeError ? "text-danger" : ""}>{"Total Cards: " + deckCount + deckSizeError}</Col>
@@ -183,9 +177,9 @@ class DeckManager extends Component {
               <Col>{"Instants and Sorceries: " + instantSorceryCount}</Col>
               <Col>{"Other Cards: " + otherCount}</Col>
             </Row>
-            <Row className="mt-2">
+            {this.props.publishDeck && (<Row className="mt-2">
               <Col><FormCheck type="checkbox" label="View cards as images" checked={!this.state.simpleView} onChange={event => this.setState({simpleView: !event.target.checked})} /></Col>
-            </Row>
+            </Row>)}
           </Container>
           <CardSection simpleView={this.state.simpleView} title="Commander" cards={commanders} decrementCard={this.removeCommander} />
           {this.props.commanderSelection.size > 0 && deck.length > 0 && <TitledDivider title="Main Deck" />}

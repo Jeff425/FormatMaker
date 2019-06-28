@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactGA from 'react-ga';
-import { Link } from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import Alert from 'react-bootstrap/Alert';
 import { withFirebase } from './../Firebase/FirebaseContext';
 import ROUTES from './../ROUTES';
@@ -58,7 +58,7 @@ class OwnFormatSelector extends Component {
   }
   
   deleteError(errorMsg) {
-    this.setState({error: errorMsg});
+    this.setState({error: errorMsg, isLoading: false});
   }
   
   componentWillUnmount() {
@@ -98,4 +98,4 @@ class OwnFormatSelector extends Component {
   }
 }
 
-export default withFirebase(OwnFormatSelector);
+export default withFirebase(withRouter(OwnFormatSelector));

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactGA from 'react-ga';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -52,6 +53,7 @@ class CardObj extends Component {
   }
   
   purchaseCard() {
+    ReactGA.event({category: "Affiliate Link", action: "TCGPlayer", label: this.props.card.name});
     const url = "https://shop.tcgplayer.com/magic/product/show?partner=FormatMaker&utm_campaign=affiliate&utm_medium=FormatMaker&utm_source=FormatMaker&ProductName=" + (this.props.card.searchName ? this.props.card.searchName : this.props.card.name);
     window.open(url, "_blank");
   }
@@ -79,15 +81,18 @@ class CardObj extends Component {
                 {this.state.manaCostImage}
               </div>}
             </div>
-            <ButtonNumber variant="secondary" className="cardCount" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)} number={this.props.count} />
+            <ButtonNumber variant="secondary" onClick={event => this.props.onIncrement && this.props.onIncrement(this.props.card)} number={this.props.count} />
+            {this.props.onIncrement && (
+              <Button variant="success" onClick={event => this.props.onIncrement(this.props.card)}><b>+1</b></Button>
+            )}
             {this.props.onRemove && (
-              <Button variant="danger" className="cardRemove" onClick={event => this.props.onRemove(this.props.card)}><b>-1</b></Button>
+              <Button variant="danger" onClick={event => this.props.onRemove(this.props.card)}><b>-1</b></Button>
             )}        
             {this.props.onSide && (
-              <Button variant="primary" className="sideboard" onClick={event => this.props.onSide(this.props.card)}><b>S</b></Button>
+              <Button variant="primary" onClick={event => this.props.onSide(this.props.card)}><b>S</b></Button>
             )}
             {this.props.onMain && (
-              <Button variant="primary" className="sideboard" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
+              <Button variant="primary" onClick={event => this.props.onMain(this.props.card)}><b>M</b></Button>
             )}
           </div>
           {this.state.showNormal && (<div className="normal-image-container pointer" onClick={event => this.setState({showNormal: !this.state.showNormal})}>
