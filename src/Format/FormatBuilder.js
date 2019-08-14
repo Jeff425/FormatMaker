@@ -438,10 +438,10 @@ class FormatBuilderBase extends Component {
             <p>This format can be found under <Link to="/ownformats">Your Formats</Link>, found <Link to={ROUTES.format + "/" + this.props.match.params.formatId}>directly</Link> or you may view the landing page for your format <Link to={ROUTES.formatdetails + "/" + this.props.match.params.formatId}>here.</Link> (Copy that link and send it to your friends!)</p>
           </Alert>      
         </Row>}
-        {!this.state.hasUpdatedCards && <Row className="align-items-center flex-column">
-          <Button className="mt-5" variant="primary" size="lg" onClick={this.updateFormat}>Update format to support publishing decks</Button>
+        <Row className="align-items-center flex-column">
+          <Button className="mt-5" variant="primary" size="lg" onClick={this.updateFormat}>{this.state.hasUpdatedCards ? "Update format to fix card image issues" : "Update format to support publishing decks"}</Button>
           <div className="text-warning">May take a long time!</div>
-        </Row>}
+        </Row>
         <Row>
           <Col lg>
             <FormatEditor 
